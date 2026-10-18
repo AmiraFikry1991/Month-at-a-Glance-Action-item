@@ -1,0 +1,1368 @@
+<title>Month at a Glance</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky switcher bar, pastel hero band per agent, two-column work area that stacks on phones; admin has payroll, review rules and a month-by-month cost ledger */
+:root{
+  color-scheme:light;
+  --bg:#FBFAF7; --surface:#FFFFFF; --surface-2:#F3F6FA; --ink:#1F2A3A; --muted:#5A6778; --line:#E4E8EE;
+  --band:#EAF2FB; --band-2:#FFFFFF; --band-ink:#1F2A3A; --band-muted:#5A6778;
+  --accent:#257E8B; --accent-ink:#FFFFFF; --accent-soft:#E1F1F4;
+  --brass:#8A5A12; --brass-soft:#FBEFD9; --band-brass:#FDE6D2;
+  --good:#1D6B45; --good-bg:#E2F4EA; --warn:#8F4A10; --warn-bg:#FCEBDD; --bad:#A12A20; --bad-bg:#FCE6E3;
+  --c-salary:#C7DBF3; --c-com:#BDE5E1; --c-bonus:#F8D7BF;
+  --display:'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --body:'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;color:var(--ink)}
+h3{font-size:15px;margin:0}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;margin-right:auto}
+.logo{height:36px;width:auto;display:block}
+.appname{display:flex;flex-direction:column;line-height:1.2}
+.appname small{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+.brand .divider{width:1px;height:24px;background:var(--line)}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--surface-2);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--muted);min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.field{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.field select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px;color:var(--ink)}
+.sample{font-size:12px;font-weight:700;color:var(--brass);background:var(--brass-soft);padding:4px 10px;border-radius:99px}
+
+.band{background:var(--band);color:var(--band-ink)}
+.band .wrap{padding-block:28px 72px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between}
+.band h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,4vw,42px);line-height:1.1;margin:4px 0 6px}
+.band .meta{color:var(--band-muted);font-size:14px}
+.plan{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;padding:4px 10px;border-radius:99px;background:var(--surface);color:var(--accent);border:1px solid var(--line)}
+.stats{display:flex;flex-wrap:wrap;gap:10px}
+.stat{background:var(--band-2);border:1px solid var(--line);border-radius:14px;padding:12px 16px;min-width:140px}
+.stat .k{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--band-muted)}
+.stat .v{font-size:26px;font-weight:700;line-height:1.2;margin-top:2px}
+.stat .s{font-size:12px;color:var(--band-muted)}
+.stat.hl{background:var(--band-brass);color:#2A1B04;border-color:transparent}
+.stat.hl .k,.stat.hl .s,.stat.hl .statlink .s{color:#4A3307}
+
+main.wrap{margin-top:-48px;padding-block:0 48px;display:flex;flex-direction:column;gap:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
+.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:14px}
+.panel-head .note{font-size:13px;color:var(--muted)}
+.cols{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.col-main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:18px}
+.col-side{flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:18px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--surface-2);border-radius:12px;padding:14px}
+.kpi .k{font-size:13px;color:var(--muted);font-weight:600}
+.kpi .v{font-size:26px;font-weight:700;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--muted)}
+
+.ladder{display:flex;flex-direction:column;gap:6px}
+.rung{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr)) auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:14px}
+.rung.head{background:transparent;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding-block:2px}
+.rung.on{background:var(--accent-soft);color:var(--ink);font-weight:700;box-shadow:inset 0 0 0 2px var(--accent)}
+.rung.earned{outline:2px dashed var(--warn);outline-offset:-2px}
+.rung .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--surface);color:var(--ink);white-space:nowrap}
+.rung.on .tag{background:var(--accent);color:var(--accent-ink)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:99px}
+.ok{background:var(--good-bg);color:var(--good)}
+.no{background:var(--bad-bg);color:var(--bad)}
+.wa{background:var(--warn-bg);color:var(--warn)}
+.hint{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--brass-soft);color:var(--ink);font-size:14px}
+.hint strong{color:var(--brass)}
+
+dl.bd{display:grid;grid-template-columns:1fr auto;gap:10px 14px;margin:0;font-size:14px}
+dl.bd dt{color:var(--muted)} dl.bd dd{margin:0;font-weight:600;text-align:right}
+dl.bd .total{border-top:1px solid var(--line);padding-top:10px;font-size:16px;color:var(--ink);font-weight:700}
+
+ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ul.tasks li{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;border-radius:12px;background:var(--surface-2)}
+ul.tasks .t{flex:1 1 240px;min-width:0}
+ul.tasks .t b{display:block}
+ul.tasks .t span{font-size:13px;color:var(--muted)}
+.src{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:99px;white-space:nowrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 14px;min-height:42px;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.btn.small{min-height:34px;padding:5px 10px;font-size:13px}
+.btn:hover{border-color:var(--accent)}
+
+ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.rev{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.rev:first-child{border-top:0}
+.rev .where{color:var(--muted);font-size:13px}
+.stars{letter-spacing:2px;color:var(--brass)}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.tile .k{font-size:13px;color:var(--muted);font-weight:600}
+.tile .v{font-size:28px;font-weight:700}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:860px}
+th{text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+tr.sel td{background:var(--accent-soft)}
+tr.sum td{font-weight:700;border-top:2px solid var(--line);background:var(--surface-2)}
+.flag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin:0 4px 4px 0}
+.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.badge.new{background:var(--accent-soft);color:var(--accent)}
+.set{display:flex;flex-direction:column;gap:12px}
+.set label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.set input,.set select,.rulef input,.rulef select{border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px;background:var(--surface);color:var(--ink)}
+textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface-2);color:var(--ink);font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+.small{font-size:12px;color:var(--muted)}
+
+.rules{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.rule{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.rule .r-main{flex:1 1 200px;min-width:0}
+.rule .r-main b{display:block;font-size:14px}
+.rule .r-main span{font-size:12px;color:var(--muted)}
+.rule .r-rate{font-weight:700;font-size:16px}
+.rulef{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;align-items:end}
+.rulef label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+
+.chart{display:flex;align-items:flex-end;gap:12px;height:220px;padding:0 4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.chart .col{flex:1 0 56px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
+.chart .stack{width:100%;max-width:64px;display:flex;flex-direction:column-reverse;border-radius:8px 8px 0 0;overflow:hidden}
+.chart .stack div{width:100%}
+.chart .amt{font-size:12px;font-weight:700}
+.chart .lbl{font-size:12px;color:var(--muted);padding-bottom:6px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.actions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.actions li{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--surface-2)}
+.actions li.hi{background:var(--warn-bg)}
+.actions .t{flex:1 1 240px;min-width:0}
+.actions .t b{display:block}
+.actions .t span{font-size:13px;color:var(--muted)}
+.stepper{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.stepper li{display:flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border-radius:99px;background:var(--surface-2);font-size:14px;font-weight:600;color:var(--muted)}
+.stepper .dot{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line);font-size:12px}
+.stepper li.done{color:var(--good);background:var(--good-bg)} .stepper li.done .dot{background:var(--good);color:#fff;border-color:var(--good)}
+.stepper li.now{color:var(--ink);background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent)} .stepper li.now .dot{background:var(--accent);color:#fff;border-color:var(--accent)}
+table.slip{font-size:14px} table.slip td{padding:9px 8px}
+table.slip tr.sec td{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;background:var(--surface-2)}
+table.slip tr.sub td{font-weight:700} table.slip tr.ded td.n{color:var(--bad)}
+table.slip tr.net td{font-size:18px;font-weight:700;background:var(--band-brass);border-bottom:0}
+.slip-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.slip-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.payouts{display:flex;flex-direction:column;gap:10px}
+.payout{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.po-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:flex-start}
+.po-head b{display:block;font-size:14px}
+.po-bar{display:flex;height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.po-paid{background:var(--c-com)} .po-this{background:var(--c-bonus)}
+.po-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.po-nums div{display:flex;flex-direction:column}
+.po-nums b{font-size:15px}
+.past{display:flex;flex-direction:column;gap:6px}
+.past-btn{width:100%;display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;text-align:left;min-height:44px}
+.past-btn[aria-expanded="true"]{background:var(--surface-2)}
+.statbtn{padding:0;overflow:hidden}
+.statbtn .k{padding:12px 16px 0}
+.statlink{display:flex;flex-direction:column;align-items:flex-start;width:100%;border:0;background:transparent;padding:2px 16px 12px;cursor:pointer;text-align:left;color:inherit;min-height:44px}
+.statlink .v{font-size:26px;font-weight:700;line-height:1.2}
+.statlink .s{font-size:12px;color:var(--band-muted)}
+.statlink:hover u,.statlink:focus-visible u{color:var(--accent)}
+.statbtn:hover{border-color:var(--accent)}
+.sumrow{display:flex;flex-wrap:wrap;gap:8px}
+.sumrow span{background:var(--surface-2);border-radius:99px;padding:6px 12px;font-size:13px}
+.formula{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.formula span{background:var(--surface-2);border-radius:10px;padding:8px 12px}
+.formula span:nth-child(even){background:transparent;padding:0 2px;font-weight:700;color:var(--muted)}
+.formula .res{background:var(--band-brass)}
+.linkbtn{border:0;background:none;padding:0;color:var(--accent);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+.dialog.wide{max-width:860px;max-height:calc(100vh - 32px);overflow-y:auto}
+.helpbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--accent);font:700 17px/1 var(--display);font-style:italic;cursor:pointer;flex:none}
+.helpbtn:hover,.helpbtn:focus-visible{background:var(--accent-soft);border-color:var(--accent)}
+.helpbody{display:flex;flex-direction:column;gap:14px}
+.helpsec h3{font-family:var(--display);font-weight:400;font-size:19px;margin:0 0 4px}
+.helpsec p{margin:0;font-size:14px;line-height:1.6;max-width:68ch}
+.faq{border:1px solid var(--line);border-radius:12px;padding:0 14px;background:var(--surface)}
+.faq summary{cursor:pointer;padding:12px 0;font-weight:600;font-size:14px;min-height:44px;display:flex;align-items:center}
+.faq[open] summary{color:var(--accent)}
+.faq p{margin:0 0 14px;font-size:14px;line-height:1.6;max-width:68ch}
+.mc-acts{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.linkbtn.small{font-size:13px;font-weight:600}
+.cleared{border-top:1px solid var(--line);padding-top:10px}
+.cleared summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);min-height:32px;display:flex;align-items:center}
+.mc-num{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mc-num .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;font-size:14px;user-select:all;white-space:nowrap}
+.lockcard{display:flex;flex-direction:column;gap:12px;align-items:flex-start;background:var(--brass-soft);border:1px solid var(--line)}
+.lockcard svg{color:var(--brass)}
+.gate{display:flex;flex-direction:column;gap:6px}
+.gate .track{height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.gate .fill{height:100%;background:var(--c-com);border-right:2px solid var(--accent)}
+.rung.two{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto}
+.tierbig{display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:12px;background:var(--accent-soft)}
+.tierbig .tb-name{font-family:var(--display);font-size:30px;line-height:1.1;color:var(--ink)}
+.pending{color:var(--muted);font-weight:500;font-style:italic}
+.earn-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.earn-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:14px}
+.earn-stats .es{border-radius:12px;padding:14px;background:var(--surface-2)}
+.earn-stats .es.hl{background:var(--band-brass)}
+.earn-stats .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.earn-stats .v{font-size:26px;font-weight:700}
+.earn-stats .s{font-size:12px;color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(31,42,58,.35);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.dialog{background:var(--surface);border-radius:18px;max-width:440px;width:100%;padding:24px;box-shadow:0 20px 50px rgba(31,42,58,.25);display:flex;flex-direction:column;gap:14px}
+.dialog h2{font-size:26px}
+.warnbox{background:var(--warn-bg);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px}
+.warnbox b{color:var(--warn)}
+.dialog label.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.dialog label.chk input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}
+.dialog label.pw{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.dialog input[type=password]{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px;background:var(--surface);color:var(--ink)}
+.err{color:var(--bad);font-size:13px;font-weight:600;min-height:18px}
+.chkrow{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink);font-weight:500}
+.chkrow input{width:20px;height:20px;accent-color:var(--accent);margin-top:2px}
+.info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;margin-left:6px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--accent);font:700 11px/1 var(--body);font-style:italic;cursor:help;vertical-align:1px;text-transform:none;letter-spacing:0}
+.info::after{content:"";position:absolute;inset:-12px}
+.info:hover,.info:focus-visible{border-color:var(--accent);background:var(--accent-soft)}
+#tip{position:fixed;z-index:30;max-width:290px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5;box-shadow:0 10px 28px rgba(31,42,58,.16);pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.panel,.tile{transition:border-color .2s}}
+</style>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="brand">
+      <img class="logo" src="data:image/png;base64,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" alt="Day 1 Egypt" width="83" height="36">
+      <span class="divider" aria-hidden="true"></span><span class="appname">Month at a Glance<small>Month to date</small></span>
+      <span class="sample">Sample data</span>
+    </div>
+    <div class="seg" role="group" aria-label="Choose view">
+      <button type="button" id="v-agent" aria-pressed="true">Agent view</button>
+      <button type="button" id="v-admin" aria-pressed="false">Admin view</button>
+    </div>
+    <label class="field" id="agentPick" for="agentSel">Viewing as
+      <select id="agentSel"></select>
+    </label>
+    <button type="button" class="btn small" id="ticketBtn">Raise a ticket</button>
+    <button type="button" class="helpbtn" id="helpBtn" aria-label="User guide and FAQs" title="User guide and FAQs">i</button>
+  </div>
+</div>
+
+<div id="app"></div>
+
+<script>
+(function(){
+const MONTHS = ['May','Jun','Jul','Aug','Sep','Oct'];
+const FX_HIST = [49.10, 49.40, 49.80, 50.60, 51.20];
+const TIPS = {
+  missedToday:'Missed calls from today that nobody has called back yet. Tap Call back to ring the customer through Aircall. As soon as Aircall logs a call from you to that number, or the customer calls again and gets through, the call is removed here and the Google Chat alert is updated automatically. If you reached the customer another way, such as WhatsApp or email, tap Handled another way and choose how.',
+  inbound:'All inbound calls routed to you this month, answered and missed. Source: Aircall.',
+  missed:'Inbound calls you did not answer this month. Missed calls count toward your conversion rate (deals ÷ all inbound calls, including missed), so every missed call lowers it. Tap the box to see each one.',
+  outbound:'Outbound calls you made this month. Every 10 outbound calls give you 1 inbound credit (9 calls = 0 credits, 10 = 1).',
+  effInb:'Answered inbound calls + 1 credit for every 10 outbound calls. Missed calls do not count here. On the Legacy plan you need 65 to reach the top three performance levels.',
+  conversion:'Deals ÷ all inbound calls, including missed ones. A missed call is a lost chance, so it counts against you.',
+  comOld:'Passengers after cancellations × your rate per passenger × your performance multiplier. Calculated in USD, then converted to EGP.',
+  comNew:'Every booking that reaches final payment this month pays your tier rate: one rate for Inside or Oceanview, a higher one for Balcony or Suite. All bookings pay the tier you reach.',
+  tierOld:'Your passengers after cancellations set your tier: Tier 1 at 50+, Tier 2 at 60+, Tier 3 at 80+, Tier 4 at 100+, Tier 5 at 120+, Tier 6 at 140+.',
+  tierNew:'Your final payment bookings for the month set your tier. Miss a standard and you drop one tier.',
+  multiplier:'Your performance level is set by conversion, CSAT, NPS and the 65 effective inbound gate. From highest: High Performer, Qualified, Participation Cap, Limited.',
+  passengers:'Passengers on your closed deals this month, minus cancellations. This is the only place cancellations are deducted.',
+  fpBookings:'Bookings at Closed Won Approved whose final payment date falls this month and are not cancelled. Groups of 8+ cabins count in the month of sailing.',
+  standards:'CSAT 4.5 or higher, conversion 55% or higher, lead score 80% or higher. Miss any one and every booking drops one tier. Missing more than one still drops one tier.',
+  insurance:'Policies you sold this month. They are confirmed once the insurance vendor sends the file confirming payment, usually after month end.',
+  reviewsOld:'Verified reviews on Trustpilot, BBB, or the Florida or New York office Google profiles that mention you. Counted in the first week of next month.',
+  reviewsNew:'Verified reviews on Trustpilot, BBB, or the Florida or New York office Google profiles. A review must stay live 30 days to count, and one review under 4 stars removes the month\'s review bonus. Counted in the first week of next month.',
+  stipend:'Fixed monthly transport amount, reduced pro rata if you joined or left mid-month.',
+  incentive:'One-off or monthly incentive set by management, for example a desk award.',
+  milestones:'$150 once for your first 20 deposited bookings. $250 once for your first month at 25 or more final payment bookings.',
+  fx:'USD amounts are converted to EGP at the Google rate on the 1st of the following month.',
+  attendance:'Days present (on time or late) ÷ working days so far this month.',
+  qa:'Average grade of your reviewed calls: the Aircall AI score combined with your QA reviewer\'s grade.',
+  earned:'Confirmed amounts only. Insurance and reviews are added at month end.',
+  onTrackOld:'Your month so far, projected to a full month at your current pace.',
+  onTrackNew:'Includes bookings already scheduled to reach final payment before the month ends.',
+  deductions:'Anything taken off your pay this month, with the reason. Basic salary deductions come off the salary paid around the 31st. Commission deductions come off the commission paid around the 15th of the next month. You see them before anything is transferred and can question them.',
+  payouts:'Money the company paid out because of a mistake, for example wrong advice a customer acted on. You agreed to repay it in monthly amounts from your basic salary, your commission, or both, until it is fully repaid.',
+  variable:'Commission plus bonuses, stipends and incentives, before base salary.',
+  costUnit:'Average monthly cost ÷ average monthly passengers (Legacy) or final payment bookings (Q3 2026).'
+};
+const info = k => `<button type="button" class="info" data-tip="${k}" aria-label="How this is calculated">i</button>`;
+const PLATFORMS = {all:'All platforms', trustpilot:'Trustpilot', gfl:'Google (Florida office)', gny:'Google (New York office)', bbb:'BBB'};
+
+const S = {
+  month:'October 2026', workDays:22, dayNo:13, today:17, fx:50.00,
+  insReceived:false, reviewsCounted:false, payStage:'preview',
+  baseReview:250,
+  reviewRules:[
+    {id:1, label:'Double window', platform:'all', from:20, to:31, rate:500},
+    {id:2, label:'Florida office push', platform:'gfl', from:null, to:null, rate:500},
+    {id:3, label:'BBB reviews', platform:'bbb', from:null, to:null, rate:750}
+  ],
+  old:{ tiers:[[50,2],[60,4],[80,5],[100,6],[120,7],[140,8]],
+    levels:[
+      {name:'High Performer', conv:.80, csat:4.8, nps:.80, inb:65, mult:1.15},
+      {name:'Qualified', conv:.70, csat:4.6, nps:.70, inb:65, mult:1.125},
+      {name:'Participation Cap', conv:.60, inb:65, mult:1.075},
+      {name:'Limited', conv:.50, mult:1.025},
+      {name:'Need Improvement', conv:0, mult:1.0}],
+    insurance:150 },
+  nw:{ tiers:[{min:1,max:24,i:2,b:3},{min:25,max:39,i:4,b:6},{min:40,max:49,i:7,b:11},{min:50,max:59,i:10,b:14},{min:60,max:69,i:12,b:16},{min:70,max:Infinity,i:15,b:19}],
+    csat:4.5, conv:.55, lead:.80, m20:150, m25:250 }
+};
+let nextRuleId = 4;
+
+/* reviews: [platform, day posted (Oct day; negative = September), stars, days live] */
+const AGENTS = [
+  {id:'nour', name:'Nour Selim', plan:'old', salary:15000, inEx:140, inAll:150, out:520, deals:95, pax:160, cancels:10, nps:.82, csat:4.85, ins:8, stipend:4000, incentive:2000, att:[13,0,0], qa:92,
+    reviews:[['trustpilot',2],['gfl',5],['gny',7],['trustpilot',11],['gny',14],['gfl',16]]},
+  {id:'karim', name:'Karim Fawzy', plan:'old', salary:14000, inEx:60, inAll:70, out:300, deals:40, pax:85, cancels:5, nps:.72, csat:4.6, ins:3, stipend:2000, incentive:0, att:[11,2,0], qa:84,
+    reviews:[['gfl',4],['trustpilot',12]]},
+  {id:'laila', name:'Laila Mansour', plan:'old', salary:16000, inEx:80, inAll:84, out:450, deals:69, pax:130, cancels:4, nps:.75, csat:4.7, ins:5, stipend:4000, incentive:0, att:[13,0,0], qa:90,
+    reviews:[['gny',3],['bbb',8],['gfl',9],['gny',15]]},
+  {id:'omar', name:'Omar Khattab', plan:'old', salary:12000, inEx:40, inAll:55, out:200, deals:20, pax:44, cancels:2, nps:.60, csat:4.3, ins:1, stipend:2000, incentive:0, att:[10,1,2], qa:71, reviews:[]},
+  {id:'dina', name:'Dina Raouf', plan:'old', salary:18000, inEx:90, inAll:95, out:600, deals:78, pax:170, cancels:6, nps:.85, csat:4.9, ins:9, stipend:4000, incentive:2500, att:[13,0,0], qa:95,
+    reviews:[['bbb',1],['gny',3],['gfl',6],['trustpilot',8],['gny',10],['trustpilot',13],['gfl',16]]},
+  {id:'tarek', name:'Tarek Hany', plan:'old', salary:13000, inEx:55, inAll:60, out:80, deals:38, pax:70, cancels:3, nps:.70, csat:4.6, ins:2, stipend:2000, incentive:0, att:[12,1,0], qa:82,
+    reviews:[['gfl',10]]},
+  {id:'salma', name:'Salma Adel', plan:'old', salary:15500, inEx:100, inAll:108, out:380, deals:80, pax:118, cancels:5, nps:.78, csat:4.7, ins:6, stipend:4000, incentive:0, att:[12,0,1], qa:87,
+    reviews:[['bbb',6],['gny',9],['gfl',14]]},
+  {id:'youssef', name:'Youssef Galal', plan:'old', salary:14500, inEx:70, inAll:79, out:510, deals:52, pax:96, cancels:7, nps:.74, csat:4.6, ins:4, stipend:2000, incentive:1500, att:[13,0,0], qa:85,
+    reviews:[['gfl',2],['trustpilot',15]]},
+  {id:'mariam', name:'Mariam Tawfik', plan:'new', salary:12000, monthNo:4, fpI:14, fpB:17, scI:6, scB:8, inEx:112, out:260, inAll:120, deals:74, csat:4.7, lead:.86, deposited:58, m20Paid:true, m25Paid:false, att:[13,0,0], qa:88,
+    reviews:[['trustpilot',-10,5,40],['gny',-3,5,33],['gfl',5,4,12]]},
+  {id:'hassan', name:'Hassan Nabil', plan:'new', salary:12000, monthNo:2, fpI:5, fpB:4, scI:3, scB:4, inEx:52, out:120, inAll:60, deals:38, csat:4.8, lead:.78, deposited:22, m20Paid:false, m25Paid:false, att:[12,1,0], qa:80,
+    reviews:[['gny',-14,5,31]]},
+  {id:'rana', name:'Rana Saeed', plan:'new', salary:12000, monthNo:6, fpI:22, fpB:26, scI:1, scB:1, inEx:124, out:300, inAll:130, deals:91, csat:4.6, lead:.90, deposited:140, m20Paid:true, m25Paid:true, att:[13,0,0], qa:91,
+    reviews:[['trustpilot',-18,5,35],['gfl',-3,3,20],['gny',9,5,8]]},
+  {id:'ali', name:'Ali Mostafa', plan:'new', salary:12000, monthNo:1, fpI:0, fpB:1, scI:1, scB:2, inEx:36, out:90, inAll:40, deals:23, csat:4.5, lead:.82, deposited:9, m20Paid:false, m25Paid:false, att:[9,0,0], qa:76, reviews:[]}
+];
+
+const OWNER_LOG = [
+  {deal:'Mediterranean 7N, deal 48213', from:'Hassan Nabil', to:'Rana Saeed', changed:'14 Oct, 17:52', fp:'16 Oct', why:'Changed 2 days before final payment'},
+  {deal:'Caribbean 5N, deal 47990', from:'Omar Khattab', to:'Dina Raouf', changed:'9 Oct, 11:05', fp:'28 Nov', why:''},
+  {deal:'Alaska 7N, deal 48302', from:'Ali Mostafa', to:'Mariam Tawfik', changed:'15 Oct, 21:40', fp:'19 Oct', why:'Changed 4 days before final payment'}
+];
+
+/* today's missed calls not yet returned (sample; live tool fills this from Aircall as calls are missed) */
+const NOW_MIN = 14*60;
+const MISSED_POOL = [
+  {time:'13:46', num:'+1 (954) 555-0187', name:'Sandra Morales', info:'Quoted Western Caribbean 7N for March 2027, 2 adults. Quote sent 2 days ago.'},
+  {time:'13:21', num:'+1 (305) 555-0142', name:null, info:'No match in HubSpot. Likely a new enquiry.'},
+  {time:'12:58', num:'+1 (407) 555-0119', name:'Greg and Patty Lindqvist', info:'Booked Alaska 7N, June 2027. Final payment due 3 Feb.'},
+  {time:'11:34', num:'+1 (212) 555-0173', name:'Keisha Brown', info:'Website chat lead yesterday, family of 4, asked about kids sail free.'},
+  {time:'10:12', num:'+1 (813) 555-0164', name:null, info:'No match in HubSpot. Called twice today.'}
+];
+const MISSED_COUNT = {nour:2, karim:3, laila:1, omar:4, dina:0, tarek:2, salma:1, youssef:3, mariam:2, hassan:1, rana:0, ali:2};
+function missedToday(a){
+  const n = MISSED_COUNT[a.id] || 0, start = AGENTS.indexOf(a) % MISSED_POOL.length, out = [];
+  for(let k=0; k<n; k++){ const m = MISSED_POOL[(start+k) % MISSED_POOL.length]; const [hh,mm] = m.time.split(':').map(Number); out.push({...m, key:(start+k)%MISSED_POOL.length, wait: NOW_MIN - (hh*60+mm)}); }
+  return out.sort((x,y)=>y.wait-x.wait);
+}
+const waitLabel = m => m < 60 ? m+' min' : Math.floor(m/60)+' h '+(m%60)+' min';
+/* every missed call this month, with the agent's Aircall status at the time (sample) */
+const CALLERS = ['Sandra Morales', null, 'Greg Lindqvist', 'Keisha Brown', null, 'Dennis Okafor', 'Maria Rossi', null, 'Paul and Jan Whitfield', 'Aisha Rahman'];
+const DISPUTE_REASONS = ['Assigned to me in error','I was logged out of Aircall','I was on another call','I was on an approved break','I was on leave or off shift','Other'];
+function monthMissed(a){
+  const ix = AGENTS.indexOf(a), n = Math.max(0, a.inAll - a.inEx), out = [];
+  for(let k=0; k<n; k++){
+    const day = 1 + Math.floor(k*16/Math.max(n,1)), hh = 9 + (k*5 + ix) % 9, mm = (k*17 + ix*7) % 60;
+    const status = (k + ix) % 7 === 3 ? 'Logged out of Aircall' : (k + ix) % 5 === 2 ? 'On another call' : 'Available';
+    out.push({ id:a.id+'-'+k, day, time:String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'),
+      num:'+1 (' + [954,305,407,212,813,786][(k+ix)%6] + ') 555-01' + String((k*7 + ix*3) % 90 + 10),
+      name: CALLERS[(k*3 + ix) % CALLERS.length], line: k % 3 ? 'Sales line' : 'Bonus queue', ring: (12 + (k*7) % 25) + ' sec', status, returned: k % 3 !== 0 });
+  }
+  return out.reverse();
+}
+const DISPUTES = [
+  {id:1, agent:'omar', call:'omar-6', reason:'I was logged out of Aircall', note:'My shift ended at 5pm, this call came in at 5:40pm.', status:'pending'},
+  {id:2, agent:'karim', call:'karim-3', reason:'Assigned to me in error', note:'This came in on the Florida line, which I am not on.', status:'accepted'}
+];
+let nextDisputeId = 3;
+const acceptedMissed = id => DISPUTES.filter(d => d.agent===id && d.status==='accepted').length;
+const disputeFor = callId => DISPUTES.find(d => d.call===callId);
+
+function missedModal(a){
+  const list = monthMissed(a), acc = acceptedMissed(a.id);
+  let h = `<div class="modal" id="missedModal"><div class="dialog wide" role="dialog" aria-modal="true" aria-labelledby="mmTitle">
+    <div class="earn-head"><h2 id="mmTitle">Your missed calls</h2><button type="button" class="btn" id="mmClose">Close</button></div>
+    <p class="small" style="margin:0">${S.month} so far: ${list.length} missed${acc ? `, ${acc} removed after a dispute` : ''}. These are the missed calls counted toward your conversion rate.</p>
+    <div class="tscroll" style="max-height:min(60vh,520px);overflow-y:auto"><table style="min-width:640px"><thead><tr><th>When</th><th>Caller</th><th>Line</th><th>Your Aircall status</th><th>Called back</th><th></th></tr></thead><tbody>`;
+  list.forEach(m => { const d = disputeFor(m.id);
+    const act = d ? (d.status==='pending' ? '<span class="flag wa">Dispute pending</span>' : d.status==='accepted' ? '<span class="flag ok">Removed</span>' : '<span class="flag no">Dispute rejected</span>')
+      : `<button type="button" class="btn small" data-dispute="${m.id}">Dispute</button>`;
+    h += `<tr${d && d.status==='accepted' ? ' style="opacity:.55"' : ''}><td>${m.day} Oct, ${m.time}</td><td><b>${m.name ? esc(m.name) : 'Unknown caller'}</b><div class="small" style="font-family:ui-monospace,Menlo,monospace">${esc(m.num)}</div></td><td>${m.line}<div class="small">Rang ${m.ring}</div></td>
+      <td>${m.status==='Available' ? 'Available' : `<span class="flag wa">${m.status}</span>`}</td><td>${m.returned ? 'Yes' : '<span class="small">No</span>'}</td><td>${act}</td></tr>`;
+    if(state.disputeFor===m.id) h += `<tr><td colspan="6" style="background:var(--surface-2)"><form id="disputeForm" class="rulef" novalidate>
+        <label for="dp-reason">Why was this not your missed call?<select id="dp-reason">${DISPUTE_REASONS.map(r=>`<option>${r}</option>`).join('')}</select></label>
+        <label for="dp-note" style="grid-column:1/-1">Details for your manager<input id="dp-note" type="text" maxlength="160" placeholder="e.g. I was on an approved break from 1:00 to 1:30"></label>
+        <button type="submit" class="btn primary">Send dispute</button><button type="button" class="btn" id="dpCancel">Cancel</button>
+        <div class="err" role="alert" style="grid-column:1/-1">${esc(state.disputeErr||'')}</div></form></td></tr>`;
+  });
+  if(!list.length) h += `<tr><td colspan="6">No missed calls this month.</td></tr>`;
+  return h + `</tbody></table></div></div></div>`;
+}
+
+const TASKS = [
+  {t:'Call back about the balcony upgrade', d:'Customer asked for a callback after checking with her husband', src:'From call at 10:42'},
+  {t:'Send revised Greek Isles quote', d:'Wants two cabins side by side, budget under $3,000', src:'From call at 09:15'},
+  {t:'Confirm deposit before hold expires', d:'Cabin hold ends tomorrow 18:00', src:'Deposit date trigger'},
+  {t:'Review this call', d:'No follow-up found and no booking. Check if one was missed', src:'Safety net'}
+];
+
+let state = { view:'agent', agentId:'nour', adminMode:'mtd', adminTab:'payroll', histMetric:'total', histAgent:'nour', dismissed:{}, calledBack:{}, calling:null, otherFor:null, ruleMsg:'', unlocked:false, modal:false, modalErr:'', queryOpen:false, queryErr:'', pastOpen:null, slipAgent:'nour', dedErr:'', payErr:'', missedOpen:false, disputeFor:null, disputeErr:'', helpOpen:false, helpTab:'guide', dataOpen:null, ticketOpen:false, ticketErr:'', ticketSent:false, ticketTopic:'Calls' };
+try{ const v = localStorage.getItem('chview'); if(v==='admin'||v==='agent') state.view=v; }catch(e){}
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const usd = n => '$' + (Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:0, maximumFractionDigits:2});
+const egp = n => 'LE ' + Math.round(n).toLocaleString('en-US');
+const pct = n => (n*100).toFixed(1).replace(/\.0$/,'') + '%';
+const dayLabel = d => d>0 ? d+' Oct' : (30+d)+' Sep';
+const winLabel = r => (r.from==null && r.to==null) ? 'Whole month' : (r.from??1)+' to '+(r.to??31)+' Oct';
+
+/* ---------- review pricing: highest matching rule wins, base rate always applies ---------- */
+function reviewRate(platform, day){
+  let rate = S.baseReview, rule = null;
+  for(const r of S.reviewRules){
+    if(r.platform!=='all' && r.platform!==platform) continue;
+    if(day<1) continue;                      /* windows cover this month only */
+    if(r.from!=null && day<r.from) continue;
+    if(r.to!=null && day>r.to) continue;
+    if(r.rate>rate){ rate=r.rate; rule=r; }
+  }
+  return {rate, rule};
+}
+
+/* ---------- CURRENT PLAN: pax tiers x performance multiplier + EGP bonuses ---------- */
+function oldRate(pax){ let r=0; for(const [min,rate] of S.old.tiers){ if(pax>=min) r=rate; } return r; }
+function oldLevel(conv, csat, nps, effInb){
+  for(const L of S.old.levels){
+    const okConv = conv >= L.conv;
+    const okCsat = L.csat==null || (csat>0 && csat>=L.csat);
+    const okNps = L.nps==null || (nps>0 && nps>=L.nps);
+    const okInb = L.inb==null || effInb>=L.inb;
+    if(okConv && okCsat && okNps && okInb) return L;
+  }
+  return S.old.levels[S.old.levels.length-1];
+}
+function calcOld(a, projected){
+  const f = projected ? S.workDays/S.dayNo : 1;
+  const inEx=Math.round(a.inEx*f), inAll=Math.round((a.inAll - acceptedMissed(a.id))*f), out=Math.round(a.out*f), deals=Math.round(a.deals*f), pax=Math.round(a.pax*f), cancels=Math.round(a.cancels*f);
+  const effInb = inEx + Math.floor(out/10);
+  const conv = inAll ? deals/inAll : 0;
+  const finalPax = Math.max(0, pax - cancels);
+  const rate = oldRate(finalPax);
+  const L = oldLevel(conv, a.csat, a.nps, effInb);
+  const baseUsd = finalPax * rate * L.mult;
+  const ins = Math.round(a.ins*f);
+  const priced = a.reviews.map(r => ({platform:r[0], day:r[1], ...reviewRate(r[0], r[1])}));
+  const reviewEst = priced.reduce((s,r)=>s+r.rate,0) * f;
+  const reviewEgp = S.reviewsCounted ? reviewEst : 0;
+  const insEst = ins*S.old.insurance;
+  const insEgp = S.insReceived ? insEst : 0;
+  const bonusEgp = insEgp + a.stipend + a.incentive + reviewEgp;
+  const bonusEst = insEst + a.stipend + a.incentive + reviewEst;
+  const totalEgp = baseUsd*S.fx + bonusEgp;
+  const flags = [];
+  if(rate===0) flags.push(['no','Under 50 pax: no pax commission']);
+  if(effInb < 65 && conv >= .6) flags.push(['wa', (65-effInb)+' short of 65 inbound gate']);
+  if(conv < .5) flags.push(['wa','Conversion under 50%']);
+  const nextTier = S.old.tiers.find(t => t[0] > finalPax);
+  if(!S.insReceived && ins) flags.push(['wa','Insurance waiting for vendor file']);
+  return { plan:'old', inEx, inAll, out, deals, pax, cancels, effInb, conv, finalPax, rate, level:L, baseUsd, ins, insEgp, insEst, priced, reviewEgp, reviewEst, bonusEgp, bonusEst, totalEgp, flags, nextTier,
+    comUsd: baseUsd, units: finalPax, unitName:'pax',
+    volume: finalPax+' pax', tierLabel: rate ? ('$'+rate+'/pax') : '$0/pax', quality: L.name+' ('+L.mult+'x)' };
+}
+
+/* ---------- NEW PLAN: final payment bookings by cabin, standards drop one tier ---------- */
+function newTierIndex(count){ return S.nw.tiers.findIndex(t => count>=t.min && count<=t.max); }
+function newPay(i, b, met){
+  const count = i + b;
+  const earnedIdx = newTierIndex(count);
+  const paidIdx = earnedIdx < 0 ? -1 : (met ? earnedIdx : earnedIdx - 1);
+  const T = paidIdx >= 0 ? S.nw.tiers[paidIdx] : null;
+  return { count, earnedIdx, paidIdx, usd: T ? i*T.i + b*T.b : 0 };
+}
+function calcNew(a, projected){
+  const i = a.fpI + (projected ? a.scI : 0), b = a.fpB + (projected ? a.scB : 0);
+  const inAllAdj = a.inAll - acceptedMissed(a.id);
+  const conv = inAllAdj ? a.deals/inAllAdj : 0;
+  const std = [
+    {k:'CSAT', v:a.csat.toFixed(1), need:S.nw.csat.toFixed(1), ok:a.csat>=S.nw.csat},
+    {k:'Conversion', v:pct(conv), need:pct(S.nw.conv), ok:conv>=S.nw.conv},
+    {k:'Lead score', v:pct(a.lead), need:pct(S.nw.lead), ok:a.lead>=S.nw.lead}
+  ];
+  const met = std.every(s => s.ok);
+  const p = newPay(i, b, met);
+  const m20 = (!a.m20Paid && a.deposited>=20) ? S.nw.m20 : 0;
+  const m25 = (!a.m25Paid && p.count>=25) ? S.nw.m25 : 0;
+  const lowReview = a.reviews.some(r => r[2] < 4);
+  const priced = a.reviews.map(r => ({platform:r[0], day:r[1], stars:r[2], live:r[3], ...reviewRate(r[0], r[1])}));
+  const payable = priced.filter(r => r.live>=30 && r.stars>=4);
+  const reviewEst = lowReview ? 0 : payable.reduce((s,r)=>s+r.rate,0);
+  const reviewEgp = S.reviewsCounted ? reviewEst : 0;
+  const totalUsd = p.usd + m20 + m25;
+  const totalEgp = totalUsd*S.fx + reviewEgp;
+  const flags = [];
+  std.filter(s=>!s.ok).forEach(s => flags.push(['no', s.k+' below standard: dropped 1 tier']));
+  if(lowReview) flags.push(['no','Review under 4 stars: no review bonus']);
+  if(m20) flags.push(['ok','Milestone: first 20 deposited']);
+  if(m25) flags.push(['ok','Milestone: first month at 25+']);
+  let next = null;
+  const nextT = S.nw.tiers[p.earnedIdx+1];
+  if(nextT){ const need = nextT.min - p.count; const sim = newPay(i, b+need, met); next = { need, tierNo:p.earnedIdx+2, gain: sim.usd - p.usd }; }
+  const inEx = a.inEx, out = a.out, effInb = inEx + Math.floor(out/10);
+  return { plan:'new', i, b, conv, std, met, ...p, m20, m25, lowReview, priced, payableCount:payable.length, reviewEgp, reviewEst, totalUsd, totalEgp, flags, next,
+    inEx, out, inAll:inAllAdj, deals:a.deals, effInb,
+    comUsd: totalUsd, units: p.count, unitName:'booking', bonusEgp: reviewEgp, bonusEst: reviewEst,
+    volume: p.count+' bookings', tierLabel: p.paidIdx>=0 ? ('Tier '+(p.paidIdx+1)) : 'No tier', quality: met ? 'All standards met' : 'Missed a standard', baseUsd: p.usd };
+}
+const calc = (a, proj) => a.plan==='old' ? calcOld(a, proj) : calcNew(a, proj);
+const attPct = a => { const [on,late,abs]=a.att; const d=on+late+abs; return d ? (on+late)/d : 0; };
+
+/* ---------- history (sample: in the live tool each month is saved when payroll closes) ---------- */
+function seed(id, m){ let h=0; for(const ch of id) h=(h*31+ch.charCodeAt(0))%997; return 0.78 + ((h + m*53) % 37)/100; }
+function history(a){
+  const out = [];
+  for(let m=0; m<6; m++){
+    if(m===5){ const c = calc(a,true); out.push({m, live:true, salary:a.salary, com:c.comUsd*S.fx, bonus:c.bonusEst, units:c.units}); continue; }
+    if(a.plan==='new'){
+      const startIdx = 6 - a.monthNo;
+      if(m < startIdx){ out.push(null); continue; }
+      const ramp = Math.pow((m-startIdx+1)/a.monthNo, 1.3);
+      const i = Math.round((a.fpI+a.scI)*ramp*seed(a.id,m)), b = Math.round((a.fpB+a.scB)*ramp*seed(a.id,m));
+      const p = newPay(i, b, true);
+      const reviews = Math.round(seed(a.id,m+3)*2) * 250;
+      out.push({m, salary:a.salary, com:p.usd*FX_HIST[m], bonus:reviews, units:p.count});
+    } else {
+      const f = seed(a.id,m) * (S.workDays/S.dayNo);
+      const finalPax = Math.max(0, Math.round((a.pax-a.cancels)*f));
+      const conv = a.deals/a.inAll, effInb = Math.round(a.inEx*f) + Math.floor(a.out*f/10);
+      const L = oldLevel(conv, a.csat, a.nps, effInb);
+      const comUsd = finalPax * oldRate(finalPax) * L.mult;
+      const bonus = Math.round(a.ins*f)*S.old.insurance + a.stipend + Math.round(a.reviews.length*f)*250 + (m%2 ? a.incentive : 0);
+      out.push({m, salary:a.salary, com:comUsd*FX_HIST[m], bonus, units:finalPax});
+    }
+  }
+  return out;
+}
+const cost = (h, metric) => !h ? null : (metric==='total' ? h.salary + h.com + h.bonus : h.com + h.bonus);
+
+/* ---------- AGENT VIEW ---------- */
+function reviewRow(r, isNew){
+  const where = `${PLATFORMS[r.platform]} · ${dayLabel(r.day)}`;
+  let st;
+  if(isNew){
+    st = r.stars<4 ? '<span class="pill no">Under 4 stars</span>' : (r.live>=30 ? `<span class="pill ok">Pays ${egp(r.rate)}</span>` : `<span class="pill wa">Live ${r.live} of 30 days</span>`);
+    return `<div class="rev"><div><span class="stars" aria-label="${r.stars} stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</span><div class="where">${where}</div></div>${st}</div>`;
+  }
+  return `<div class="rev"><div><b>${PLATFORMS[r.platform]}</b><div class="where">Posted ${dayLabel(r.day)}${r.rule?' · '+esc(r.rule.label):''}</div></div><span class="pill ${r.rate>S.baseReview?'ok':'wa'}" style="${r.rate>S.baseReview?'':'background:var(--surface-2);color:var(--ink)'}">${egp(r.rate)}</span></div>`;
+}
+function actionItems(a, c){
+  const items = [];
+  const missed = c.inAll - c.inEx;
+  if(a.plan==='old'){
+    if(c.effInb < 65){ const n = 65 - c.effInb; const calls = n*10 - (c.out % 10);
+      items.push({hi:true, t:`Make ${calls} more outbound calls`, d:`You need ${n} more inbound credit${n>1?'s':''} to reach the 65 inbound gate`, src:'Inbound gate'}); }
+    if(c.conv < .6) items.push({hi:false, t:`Lift conversion from ${pct(c.conv)} to 60%`, d:'60% unlocks the next performance level', src:'Performance'});
+  } else {
+    c.std.filter(s=>!s.ok).forEach(s => items.push({hi:true, t:`${s.k} is ${s.v}, the standard is ${s.need}`, d:'Missing a standard drops every booking one tier', src:'Standards'}));
+    if(a.scI+a.scB) items.push({hi:false, t:`${a.scI+a.scB} bookings reach final payment this month`, d:'Check none are at risk of cancelling before their date', src:'HubSpot'});
+  }
+  return items;
+}
+function lockedModal(a){
+  return `<div class="modal" id="unlockModal"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brass)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+    <h2 id="mTitle">Confidential</h2>
+    <div class="warnbox"><b>Your pay details are confidential.</b> Do not share or discuss them with anyone, inside or outside the company. Sharing them breaks your plan terms.</div>
+    <form id="unlockForm" novalidate style="display:flex;flex-direction:column;gap:12px">
+      <label class="chk" for="m-ack"><input type="checkbox" id="m-ack"> I understand and will keep my figures private.</label>
+      <label class="pw" for="m-pw">Enter your password to continue<input type="password" id="m-pw" autocomplete="current-password"></label>
+      <div class="err" role="alert">${esc(state.modalErr)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn" id="m-cancel">Cancel</button>
+        <button type="submit" class="btn primary">Show my earnings</button>
+      </div>
+      <p class="small" style="margin:0">Prototype: any password works. The live tool checks your real login, and hides figures again after a few minutes.</p>
+    </form></div></div>`;
+}
+function agentView(a){
+  const now = calc(a,false), pr = calc(a,true);
+  const isNew = a.plan==='new';
+  const ap = attPct(a);
+  const missed = now.inAll - now.inEx;
+  let h = `<section class="band"><div class="wrap">
+    <div><span class="plan">${isNew ? 'Q3 2026 plan' : 'Legacy commission plan'}</span>
+      <h1>Hi ${esc(a.name.split(' ')[0])}</h1>
+      <div class="meta">${S.month} · day ${S.dayNo} of ${S.workDays} working days${isNew ? ' · month '+a.monthNo+' on the plan' : ''}</div></div>
+    <div class="stats">
+      <div class="stat statbtn"><div class="k">Inbound${info('inbound')}</div><button type="button" class="statlink" data-data="inbound" aria-label="See your inbound calls"><span class="v">${now.inAll}</span><span class="s">${now.inEx} answered · <u>See calls</u></span></button></div>
+      <div class="stat statbtn"><div class="k">Missed calls${info('missed')}</div><button type="button" id="missedBtn" class="statlink" aria-label="See your ${missed} missed calls this month"><span class="v">${missed}</span><span class="s">${pct(now.inAll ? missed/now.inAll : 0)} of inbound · <u>See list</u></span></button></div>
+      <div class="stat statbtn"><div class="k">Outbound${info('outbound')}</div><button type="button" class="statlink" data-data="outbound" aria-label="See your outbound calls"><span class="v">${now.out}</span><span class="s">${Math.floor(now.out/10)} inbound credits · <u>See calls</u></span></button></div>
+      <div class="stat hl statbtn"><div class="k">Effective inbound${info('effInb')}</div><button type="button" class="statlink" data-data="effective" aria-label="See how your effective inbound adds up"><span class="v">${now.effInb}</span><span class="s">${isNew ? 'Answered + 1 per 10 outbound' : (now.effInb>=65 ? 'Gate of 65 cleared' : (65-now.effInb)+' short of the 65 gate')} · <u>See how</u></span></button></div>
+      <div class="stat statbtn"><div class="k">Conversion${info('conversion')}</div><button type="button" class="statlink" data-data="conversion" aria-label="See your deals and conversion"><span class="v">${pct(now.conv)}</span><span class="s">${now.deals} deals · <u>See deals</u></span></button></div>
+    </div></div></section><main class="wrap"><div class="cols"><div class="col-main">`;
+
+  const acts = actionItems(a, now);
+  const cb = state.calledBack[a.id] || {};
+  const allToday = missedToday(a), mt = allToday.filter(m => !cb[m.key]), cleared = allToday.filter(m => cb[m.key]);
+  const total = mt.length + acts.length;
+  h += `<section class="panel" aria-labelledby="k0"><div class="panel-head"><h2 id="k0">Needs your action</h2><span class="note">${total ? total+' item'+(total>1?'s':'') : 'Nothing urgent'}</span></div>`;
+  h += `<h3 style="margin:0 0 4px;font-size:14px">Missed calls today${info('missedToday')} <span class="small" style="font-weight:500">· not called back yet</span></h3>
+    <p class="small" style="margin:0 0 8px">Clears by itself when you call back.</p><ul class="actions mc" style="margin-bottom:${acts.length||cleared.length?'12px':'0'}">`;
+  if(!mt.length) h += `<li><div class="t"><b>No missed calls waiting</b><span>Every missed call today has been returned.</span></div></li>`;
+  mt.forEach(m => { const calling = state.calling===String(m.key), other = state.otherFor===String(m.key);
+    h += `<li class="${m.wait>15?'hi':''}"><div class="t"><b>${m.name ? esc(m.name) : 'Unknown caller'}</b><span>${esc(m.info)}</span></div>
+      <div class="mc-num"><span class="num">${esc(m.num)}</span><span class="small">Missed ${m.time} · waiting ${waitLabel(m.wait)}</span></div>
+      <div class="mc-acts">${calling ? '<span class="pill wa" role="status">Calling via Aircall…</span>' : `<button type="button" class="btn primary" data-callnow="${m.key}" aria-label="Call ${m.name ? esc(m.name) : esc(m.num)} back">Call back</button>
+        <button type="button" class="linkbtn small" data-other="${m.key}">Handled another way</button>`}</div>`;
+    if(other) h += `<form id="otherForm" class="rulef" style="flex:1 1 100%" novalidate>
+        <label for="ot-reason">How was it handled?<select id="ot-reason"><option>Replied on WhatsApp</option><option>Replied by email</option><option>Customer asked not to be called</option><option>Already spoke to another agent</option><option>Wrong number or spam</option></select></label>
+        <button type="submit" class="btn primary">Clear it</button><button type="button" class="btn" id="otCancel">Cancel</button></form>`;
+    h += `</li>`; });
+  h += `</ul>`;
+  if(cleared.length) h += `<details class="cleared"${acts.length?' style="margin-bottom:16px"':''}><summary>Cleared today (${cleared.length})</summary><ul class="plain small" style="padding-left:18px;margin:8px 0 0">${cleared.map(m => { const c = cb[m.key];
+      return `<li><b>${m.name ? esc(m.name) : esc(m.num)}</b>: ${c.how==='callback' ? `called back at ${c.time} (${c.dur}), detected by Aircall` : `${esc(c.reason)}, marked at ${c.time}`} · <span style="color:var(--good)">posted to Google Chat</span></li>`; }).join('')}</ul></details>`;
+  if(acts.length) h += `<h3 style="margin:0 0 8px;font-size:14px">To hit your targets</h3><ul class="actions">`;
+  else h += `<ul class="actions" hidden>`;
+  acts.forEach(x => h += `<li class="${x.hi?'hi':''}"><div class="t"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="src">${esc(x.src)}</span></li>`);
+  h += `</ul></section>`;
+
+  const dis = state.dismissed[a.id]||{};
+  h += `<section class="panel" aria-labelledby="k3"><div class="panel-head"><h2 id="k3">Today's follow-ups</h2><span class="note">Created automatically from your calls</span></div><ul class="tasks">`;
+  let shown = 0;
+  TASKS.forEach((t,ix)=>{ if(dis[ix]) return; shown++;
+    h += `<li><div class="t"><b>${esc(t.t)}</b><span>${esc(t.d)}</span></div><span class="src">${esc(t.src)}</span>
+      <button type="button" class="btn" data-dismiss="${ix}" aria-label="Dismiss: ${esc(t.t)}">Not needed</button></li>`; });
+  if(!shown) h += `<li><div class="t"><b>All clear</b><span>New follow-ups appear here after each call.</span></div></li>`;
+  h += `</ul><p class="small" style="margin:10px 0 0">Wrong task? Tap "Not needed". Every dismissal is logged so the AI improves.</p></section>`;
+
+  /* ---- progress: figures, tier and achievements, no money or calculations ---- */
+  const revCounted = now.priced.filter(r => !isNew || (r.live>=30 && r.stars>=4)).length;
+  h += `<section class="panel" aria-labelledby="p1"><div class="panel-head"><h2 id="p1">My month so far</h2><span class="note">Updated from HubSpot and Aircall</span></div><div class="kpis">`;
+  h += `<div class="kpi"><div class="k">Deals</div><div class="v">${now.deals}</div><div class="s">Closed this month</div></div>`;
+  if(isNew){
+    h += `<div class="kpi"><div class="k">Final payment bookings${info('fpBookings')}</div><div class="v">${now.count}</div><div class="s">${a.scI+a.scB} more due this month</div></div>
+      <div class="kpi"><div class="k">Inside or Oceanview</div><div class="v">${now.i}</div><div class="s">Final payment bookings</div></div>
+      <div class="kpi"><div class="k">Balcony or Suite</div><div class="v">${now.b}</div><div class="s">Final payment bookings</div></div>`;
+  } else {
+    h += `<div class="kpi"><div class="k">Passengers${info('passengers')}</div><div class="v">${now.finalPax}</div><div class="s">${now.pax} sold, ${now.cancels} cancelled</div></div>`;
+  }
+  h += `<div class="kpi"><div class="k">Conversion${info('conversion')}</div><div class="v">${pct(now.conv)}</div><div class="s">${now.deals} of ${now.inAll} inbound</div></div>
+    <div class="kpi"><div class="k">CSAT</div><div class="v">${a.csat.toFixed(1)}</div><div class="s">Out of 5</div></div>`;
+  h += isNew ? `<div class="kpi"><div class="k">Lead score</div><div class="v">${pct(a.lead)}</div><div class="s">Standard is 80%</div></div>`
+             : `<div class="kpi"><div class="k">NPS</div><div class="v">${pct(a.nps)}</div><div class="s">Customer recommendation</div></div>`;
+  h += `<div class="kpi"><div class="k">Reviews${info(isNew?'reviewsNew':'reviewsOld')}</div><div class="v">${now.priced.length}</div><div class="s">${S.reviewsCounted ? revCounted+' counted' : 'Counted after month end'}</div></div>`;
+  if(!isNew) h += `<div class="kpi"><div class="k">Insurance policies${info('insurance')}</div><div class="v">${now.ins}</div><div class="s">${S.insReceived ? 'Confirmed by vendor' : 'Confirmed at month end'}</div></div>`;
+  h += `</div></section>`;
+
+  if(isNew){
+    const tierName = now.paidIdx>=0 ? 'Tier '+(now.paidIdx+1) : 'Not in a tier yet';
+    h += `<section class="panel" aria-labelledby="k2"><div class="panel-head"><h2 id="k2">My tier${info('tierNew')}</h2><span class="note">Based on final payment bookings</span></div>
+      <div class="tierbig"><span class="tb-name">${tierName}</span><span class="small">${now.count} final payment bookings so far${!now.met && now.earnedIdx>=0 ? ` · reached Tier ${now.earnedIdx+1}, one tier down for a missed standard` : ''}</span></div>
+      <div class="ladder" style="margin-top:12px"><div class="rung head two"><span>Tier</span><span>Bookings in the month</span><span></span></div>`;
+    S.nw.tiers.forEach((t,ix)=>{ const on = ix===now.paidIdx, earned = ix===now.earnedIdx && now.earnedIdx!==now.paidIdx;
+      h += `<div class="rung two${on?' on':''}${earned?' earned':''}"><span>Tier ${ix+1}</span><span>${t.max===Infinity ? t.min+' and above' : t.min+' to '+t.max}</span><span>${on?'<span class="tag">You are here</span>':(earned?'<span class="tag">Reached, dropped 1</span>':'')}</span></div>`; });
+    h += `</div>`;
+    if(pr.next) h += `<div class="hint">With the bookings due this month you reach <strong>${pr.count}</strong>. <strong>${pr.next.need} more</strong> final payment bookings takes you to <strong>Tier ${pr.next.tierNo}</strong>.</div>`;
+    if(!now.met) h += `<div class="hint">You're missing a standard, so you're one tier down this month. Meet all three before the 31st to move back up.</div>`;
+    h += `</section>`;
+  } else {
+    const tIdx = S.old.tiers.reduce((acc,t,ix) => now.finalPax>=t[0] ? ix : acc, -1);
+    const tierName = tIdx>=0 ? 'Tier '+(tIdx+1) : 'Not in a tier yet';
+    const nextT = S.old.tiers[tIdx+1];
+    h += `<section class="panel" aria-labelledby="k2"><div class="panel-head"><h2 id="k2">My tier${info('tierOld')}</h2><span class="note">Based on passengers after cancellations</span></div>
+      <div class="tierbig"><span class="tb-name">${tierName}</span><span class="small">${now.finalPax} passengers so far · performance level: <b>${esc(now.level.name)}</b>${info('multiplier')}</span></div>
+      <div class="ladder" style="margin-top:12px"><div class="rung head two"><span>Tier</span><span>Passengers</span><span></span></div>`;
+    S.old.tiers.forEach((t,ix)=>{ const on = ix===tIdx;
+      h += `<div class="rung two${on?' on':''}"><span>Tier ${ix+1}</span><span>${t[0]}+ passengers</span><span>${on?'<span class="tag">You are here</span>':''}</span></div>`; });
+    h += `</div>`;
+    if(nextT) h += `<div class="hint"><strong>${nextT[0]-now.finalPax} more passengers</strong> takes you to <strong>Tier ${tIdx+2}</strong>. At your current pace you finish the month on about <strong>${pr.finalPax}</strong>.</div>`;
+    const lvls = S.old.levels.slice(0,-1).slice().reverse();
+    const curIx = lvls.findIndex(l=>l.name===now.level.name);
+    const nextL = curIx===-1 ? lvls[0] : lvls[curIx+1];
+    if(nextL){
+      const need = [];
+      if(now.conv < nextL.conv) need.push(`conversion of ${pct(nextL.conv)}`);
+      if(nextL.csat && a.csat < nextL.csat) need.push(`CSAT of ${nextL.csat}`);
+      if(nextL.nps && a.nps < nextL.nps) need.push(`NPS of ${pct(nextL.nps)}`);
+      if(nextL.inb && now.effInb < nextL.inb) need.push(`${nextL.inb} effective inbound`);
+      if(need.length) h += `<div class="hint">To reach <strong>${nextL.name}</strong> you need ${need.join(', ')}.</div>`;
+    }
+    h += `</section>`;
+  }
+
+  h += `<section class="panel" aria-labelledby="k5"><div class="panel-head"><h2 id="k5">My reviews</h2><span class="note">${S.reviewsCounted ? 'Counted for this month' : 'Counted in the first week of next month'}</span></div><div>`;
+  if(!now.priced.length) h += `<p class="small">No reviews yet this month. Ask happy customers after they book or sail.</p>`;
+  now.priced.forEach(r => {
+    const st = isNew ? (r.stars<4 ? '<span class="pill no">Under 4 stars</span>' : (r.live>=30 ? '<span class="pill ok">Counts</span>' : `<span class="pill wa">Live ${r.live} of 30 days</span>`)) : '<span class="pill ok">Received</span>';
+    h += `<div class="rev"><div>${isNew ? `<span class="stars" aria-label="${r.stars} stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</span>` : `<b>${PLATFORMS[r.platform]}</b>`}<div class="where">${isNew ? PLATFORMS[r.platform]+' · ' : ''}Posted ${dayLabel(r.day)}</div></div>${st}</div>`; });
+  if(isNew && now.lowReview) h += `<div class="hint">A review under 4 stars this month means no review bonus for the month.</div>`;
+  h += `</div></section>`;
+
+  if(state.unlocked){
+    const pend = [];
+    if(!isNew && now.ins && !S.insReceived) pend.push(`${now.ins} insurance polic${now.ins>1?'ies':'y'}`);
+    if(now.priced.length && !S.reviewsCounted) pend.push(`${now.priced.length} review${now.priced.length>1?'s':''}`);
+    h += `<section class="panel" aria-labelledby="e1"><div class="earn-head"><h2 id="e1">My earnings</h2><button type="button" class="btn" id="lockBtn">Hide</button></div>
+      <div class="earn-stats">
+        <div class="es"><div class="k">Earned so far${info('earned')}</div><div class="v">${egp(now.totalEgp)}</div><div class="s">Commission paid around 15 Nov</div></div>
+        <div class="es hl"><div class="k">On track for${info(isNew?'onTrackNew':'onTrackOld')}</div><div class="v">${egp(pr.totalEgp)}</div><div class="s">${isNew ? 'Incl. bookings due to final pay' : 'At your current pace'}</div></div>
+        <div class="es"><div class="k">Added at month end</div><div class="v" style="font-size:18px;line-height:1.35;margin-top:4px">${pend.length ? esc(pend.join(' and ')) : 'Nothing pending'}</div><div class="s">Insurance after the vendor file, reviews in the first week of next month</div></div>
+      </div>
+      <h3 style="margin:18px 0 10px;font-size:14px">How you're paid</h3><dl class="bd">`;
+    if(isNew){
+      h += `<dt>Booking bonus (${now.tierLabel})${info('comNew')}</dt><dd>${usd(now.usd)}</dd>`;
+      if(now.m20) h += `<dt>Milestone: first 20 deposited${info('milestones')}</dt><dd>${usd(now.m20)}</dd>`;
+      if(now.m25) h += `<dt>Milestone: first month at 25+${info('milestones')}</dt><dd>${usd(now.m25)}</dd>`;
+      h += `<dt>Converted at LE ${S.fx.toFixed(2)} per $${info('fx')}</dt><dd>${egp(now.totalUsd*S.fx)}</dd>`;
+      h += `<dt>Reviews${info('reviewsNew')}</dt><dd>${S.reviewsCounted ? egp(now.reviewEgp) : '<span class="pending">After month end</span>'}</dd>`;
+    } else {
+      h += `<dt>Commission: ${now.finalPax} pax × ${usd(now.rate)} × ${now.level.mult}${info('comOld')}</dt><dd>${usd(now.baseUsd)}</dd>`;
+      h += `<dt>Converted at LE ${S.fx.toFixed(2)} per $${info('fx')}</dt><dd>${egp(now.baseUsd*S.fx)}</dd>`;
+      h += `<dt>Transport stipend${info('stipend')}</dt><dd>${egp(a.stipend)}</dd>`;
+      if(a.incentive) h += `<dt>Incentive${info('incentive')}</dt><dd>${egp(a.incentive)}</dd>`;
+      h += `<dt>Insurance${info('insurance')}</dt><dd>${S.insReceived ? egp(now.insEgp) : '<span class="pending">Vendor file pending</span>'}</dd>`;
+      h += `<dt>Reviews${info('reviewsOld')}</dt><dd>${S.reviewsCounted ? egp(now.reviewEgp) : '<span class="pending">After month end</span>'}</dd>`;
+    }
+    h += `<dt class="total">Earned so far</dt><dd class="total">${egp(now.totalEgp)}</dd></dl>
+      <p class="small" style="margin:12px 0 0">Estimate until the month closes. Commission is paid around the 15th of next month (give or take two days). Basic salary is paid separately around the 31st.</p></section>`;
+    h += deductionsPanel(a);
+  }
+  h += `</div><div class="col-side">`;
+
+  if(isNew){
+    h += `<section class="panel" aria-labelledby="g1"><h2 id="g1" style="margin-bottom:12px">Your standards${info('standards')}</h2><div class="pills" style="margin-top:0">`
+      + now.std.map(s=>`<span class="pill ${s.ok?'ok':'no'}">${s.ok?'✓':'✕'} ${s.k} ${s.v} <span style="font-weight:500">(need ${s.need})</span></span>`).join('')
+      + `</div><p class="small" style="margin:12px 0 0">Meet all three to stay in the tier you reach.</p></section>`;
+  } else {
+    const w = Math.min(100, now.effInb/65*100);
+    h += `<section class="panel" aria-labelledby="g1"><h2 id="g1" style="margin-bottom:12px">Inbound gate${info('effInb')}</h2>
+      <div class="gate"><div style="display:flex;justify-content:space-between;font-size:14px"><b>${now.effInb} effective inbound</b><span class="small">Goal 65</span></div>
+      <div class="track" role="img" aria-label="${now.effInb} of 65"><div class="fill" style="width:${w}%"></div></div>
+      <p class="small" style="margin:4px 0 0">${now.inEx} answered inbound + ${Math.floor(now.out/10)} credits from ${now.out} outbound calls.</p></div></section>`;
+  }
+  h += `<section class="panel" aria-labelledby="g2"><h2 id="g2" style="margin-bottom:12px">Attendance and quality</h2><dl class="bd">
+    <dt>Attendance${info('attendance')}</dt><dd>${pct(ap)}</dd><dt>On time · late · absent</dt><dd>${a.att[0]} · ${a.att[1]} · ${a.att[2]}</dd><dt>QA score${info('qa')}</dt><dd>${a.qa} / 100</dd></dl></section>`;
+
+  if(!state.unlocked){
+    h += `<section class="panel lockcard" aria-labelledby="l1">
+      <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+      <h2 id="l1">My earnings</h2>
+      <p style="margin:0;font-size:14px">Your commission, earnings and deductions are private.</p>
+      ${S.payStage==='preview' && !ACK[a.id] && monthDeductions(a).lines.length ? `<span class="pill wa">You have ${PAYRUN.month} deductions to review</span>` : ''}
+      <button type="button" class="btn primary" id="unlockBtn">See my earnings</button></section>`;
+  }
+  h += `<section class="panel" aria-labelledby="k6"><h2 id="k6" style="margin-bottom:12px">Running this month</h2><ul class="plain">
+    <li>Review bonus on every verified review, with higher rates for:</li>`;
+  S.reviewRules.forEach(r => h += `<li style="margin-left:14px">${PLATFORMS[r.platform]}, ${winLabel(r).toLowerCase()}</li>`);
+  h += isNew ? `<li>Milestones for your first 20 deposited bookings and your first month at 25+ final payment bookings.</li>` : `<li>Insurance bonus on every confirmed policy.</li>`;
+  h += `</ul></section>`;
+  h += `<section class="panel" aria-labelledby="k7"><h2 id="k7" style="margin-bottom:12px">Plan rules</h2><ul class="plain small" style="color:var(--ink)">`;
+  if(isNew) h += `<li>Counts bookings that reach final payment this month at Closed Won Approved and are not cancelled.</li>
+    <li>Miss any standard and you drop one tier. Missing more than one still drops one tier.</li>
+    <li>Bookings count for whoever owns them in HubSpot on the final payment date.</li>
+    <li>Groups of 8+ cabins count in the month of sailing.</li>
+    <li>Reviews must stay live 30 days. One review under 4 stars removes the month's review bonus.</li>`;
+  else h += `<li>Your tier is set by passengers after cancellations.</li>
+    <li>The top three performance levels need 65 effective inbound; every 10 outbound calls count as 1.</li>
+    <li>Conversion is deals ÷ all inbound calls, including missed ones.</li>
+    <li>Insurance is confirmed after the vendor's file arrives. Reviews are counted in the first week of next month.</li>`;
+  h += `</ul></section></div></div></main>`;
+  if(state.modal) h += lockedModal(a);
+  if(state.missedOpen) h += missedModal(a);
+  return h;
+}
+
+/* ---------- DEDUCTIONS AND PAYOUTS: basic salary paid ~31st, commission paid ~15th of next month ---------- */
+const STAGES = [
+  {k:'draft', label:'Preparing', next:'Send to agents for review'},
+  {k:'preview', label:'Agents reviewing', next:'Mark basic salary as paid'},
+  {k:'basicPaid', label:'Basic salary paid', next:'Mark commission as paid'},
+  {k:'comPaid', label:'Commission paid', next:null}
+];
+const PAYRUN = { month:'October 2026', reviewEnds:'Thu 29 Oct, 17:00', basicDate:'31 Oct', basicWindow:'29 Oct to 2 Nov', comDate:'15 Nov', comWindow:'13 to 17 Nov' };
+const SRC = { basic:'Basic salary', commission:'Commission' };
+const DED_TYPES = ['Unpaid absence','Late arrivals','Equipment','Other'];
+let nextDedId = 10, nextPayoutId = 10;
+const DEDUCTIONS = [
+  {id:2, agent:'karim', type:'Late arrivals', amount:300, from:'basic', note:'2 late days in October, per attendance policy'},
+  {id:3, agent:'tarek', type:'Equipment', amount:450, from:'basic', note:'Replacement headset'}
+];
+AGENTS.forEach(a => { if(a.att[2] > 0) DEDUCTIONS.push({id:nextDedId++, agent:a.id, type:'Unpaid absence', amount:Math.round(a.salary/S.workDays*a.att[2]), from:'basic', note:`${a.att[2]} absent day${a.att[2]>1?'s':''} × basic salary ÷ ${S.workDays} working days`}); });
+/* payout agreements: money the company paid because of an agent's mistake, repaid in agreed monthly amounts from basic salary, commission, or both */
+const PAYOUTS = [
+  {id:1, agent:'youssef', reason:'Booking error: wrong cabin category booked, the price difference was refunded to the customer', agreed:'12 Sep 2026', total:6000, fromBasic:500, fromCom:500, paidBefore:1000},
+  {id:2, agent:'tarek', reason:'Missed final payment reminder, the booking cancelled and the company paid the cancellation fee', agreed:'8 Oct 2026', total:3600, fromBasic:1200, fromCom:0, paidBefore:0},
+  {id:3, agent:'nour', reason:'Wrong advice: customer was told no visa was needed for a port stop, was refused boarding, and the company paid his rebooking', agreed:'3 Aug 2026', total:10000, fromBasic:0, fromCom:2500, paidBefore:5000}
+];
+const ACK = { dina:'ok', laila:'ok', salma:'ok', rana:'ok', karim:'query' };
+const QUERIES = [ {id:1, agent:'karim', line:'Late arrivals', msg:'I was on approved leave on 12 Oct, so that day should not count as late.', open:true} ];
+let nextQueryId = 2;
+
+function instalment(p){
+  const left = Math.max(0, p.total - p.paidBefore);
+  const b = Math.min(p.fromBasic, left), c = Math.min(p.fromCom, left - b);
+  return { b, c, t: b + c };
+}
+const stageIdx = () => STAGES.findIndex(s => s.k===S.payStage);
+function monthDeductions(a){
+  const lines = DEDUCTIONS.filter(d => d.agent===a.id).map(d => ({label:d.type, amount:d.amount, note:d.note, from:d.from, id:d.id}));
+  PAYOUTS.filter(p => p.agent===a.id).forEach(p => { const i = instalment(p);
+    if(i.b) lines.push({label:'Payout instalment', amount:i.b, note:p.reason, from:'basic', payout:p.id});
+    if(i.c) lines.push({label:'Payout instalment', amount:i.c, note:p.reason, from:'commission', payout:p.id}); });
+  const basic = lines.filter(l=>l.from==='basic'), com = lines.filter(l=>l.from==='commission');
+  const sum = arr => arr.reduce((s,l)=>s+l.amount,0);
+  return { lines, basic, com, basicTotal:sum(basic), comTotal:sum(com), total:sum(lines), salaryAfter: a.salary - sum(basic) };
+}
+
+function payoutCard(p, showAgent){
+  const i = instalment(p), si = stageIdx();
+  const paidNow = (si>=2 ? i.b : 0) + (si>=3 ? i.c : 0);
+  const remainingAfter = Math.max(0, p.total - p.paidBefore - i.t);
+  const per = p.fromBasic + p.fromCom;
+  const monthsLeft = Math.ceil(Math.max(0, p.total - p.paidBefore) / per);
+  const pctPaid = Math.round(p.paidBefore / p.total * 100), pctThis = Math.round(i.t / p.total * 100);
+  const ag = AGENTS.find(x=>x.id===p.agent);
+  const split = [p.fromBasic ? `LE ${p.fromBasic.toLocaleString('en-US')} from basic salary` : '', p.fromCom ? `LE ${p.fromCom.toLocaleString('en-US')} from commission` : ''].filter(Boolean).join(' + ');
+  return `<div class="payout">
+    <div class="po-head"><div><b>${showAgent ? esc(ag.name)+' · ' : ''}${esc(p.reason)}</b><span class="small">Agreed ${esc(p.agreed)} · ${split} each month</span></div>
+      ${remainingAfter<=0 ? '<span class="pill ok">Fully repaid after this month</span>' : `<span class="pill wa">${monthsLeft} month${monthsLeft===1?'':'s'} left</span>`}</div>
+    <div class="po-bar" role="img" aria-label="${pctPaid}% repaid before this month, ${pctThis}% this month"><div class="po-paid" style="width:${pctPaid}%"></div><div class="po-this" style="width:${pctThis}%"></div></div>
+    <div class="po-nums">
+      <div><span class="small">Total agreed</span><b>${egp(p.total)}</b></div>
+      <div><span class="small">Paid so far</span><b>${egp(p.paidBefore + paidNow)}</b></div>
+      <div><span class="small">This month</span><b>${egp(i.t)}</b><span class="small">${[i.b?egp(i.b)+' basic':'', i.c?egp(i.c)+' commission':''].filter(Boolean).join(' · ')}</span></div>
+      <div><span class="small">Remaining after</span><b>${egp(remainingAfter)}</b></div>
+    </div></div>`;
+}
+
+function dedTable(lines, title, when, done){
+  if(!lines.length) return '';
+  let h = `<div class="ded-group"><div class="slip-head"><h3>${title}</h3><span class="small">${done ? 'Paid' : 'Paid around'} ${when}</span></div><div class="tscroll"><table class="slip" style="min-width:0"><tbody>`;
+  lines.forEach(l => h += `<tr class="ded"><td>${esc(l.label)}<div class="small">${esc(l.note)}</div></td><td class="n">− ${egp(l.amount)}</td></tr>`);
+  return h + `<tr class="net"><td>Total</td><td class="n">− ${egp(lines.reduce((s,l)=>s+l.amount,0))}</td></tr></tbody></table></div></div>`;
+}
+
+function deductionsPanel(a){
+  const md = monthDeductions(a), si = stageIdx(), ack = ACK[a.id];
+  let h = `<section class="panel" aria-labelledby="ps1"><div class="panel-head"><h2 id="ps1">Deductions${info('deductions')}</h2><span class="note">${PAYRUN.month} · confidential</span></div>`;
+  if(si===0){
+    h += `<div class="hint">This month's deductions are being prepared. You'll see them here before any money is transferred.</div>`;
+  } else {
+    const badge = si===1 ? (ack==='ok' ? '<span class="pill ok">You confirmed this</span>' : ack==='query' ? '<span class="pill wa">Question sent</span>' : (md.lines.length ? '<span class="pill wa">Please review</span>' : ''))
+      : si===2 ? '<span class="pill ok">Basic salary paid</span>' : '<span class="pill ok">Basic salary and commission paid</span>';
+    h += `<div class="slip-head"><span class="small">${si===1 ? 'Nothing has been transferred yet' : 'Applied to this month\'s pay'}</span>${badge}</div>`;
+    if(!md.lines.length) h += `<div class="hint" style="margin-top:0">No deductions this month.</div>`;
+    h += dedTable(md.basic, 'From basic salary', `${PAYRUN.basicDate} (${PAYRUN.basicWindow})`, si>=2);
+    h += dedTable(md.com, 'From commission', `${PAYRUN.comDate} (${PAYRUN.comWindow})`, si>=3);
+    if(si===1 && md.lines.length){
+      if(ack!=='ok' && ack!=='query'){
+        h += `<div class="slip-actions"><button type="button" class="btn primary" id="ackOk">This looks right</button><button type="button" class="btn" id="ackQ">Question a deduction</button></div>
+          <p class="small" style="margin:8px 0 0">Review closes ${PAYRUN.reviewEnds}, before basic salary is paid.</p>`;
+      } else if(ack==='query'){
+        const mine = QUERIES.filter(q=>q.agent===a.id);
+        h += `<div class="hint">${mine.map(q=>`<b>${esc(q.line)}:</b> ${esc(q.msg)} ${q.open?'<span class="small">(waiting for a reply)</span>':'<span class="small">(resolved)</span>'}`).join('<br>')}</div>`;
+      }
+      if(state.queryOpen){
+        h += `<form id="queryForm" class="rulef" style="margin-top:14px" novalidate>
+          <label for="q-line">Which deduction?<select id="q-line">${md.lines.map(l=>`<option>${esc(l.label)} (${SRC[l.from].toLowerCase()})</option>`).join('')}</select></label>
+          <label for="q-msg" style="grid-column:1/-1">What looks wrong?<textarea id="q-msg" style="min-height:80px;font:inherit;background:var(--surface)" placeholder="e.g. I was on approved leave that day"></textarea></label>
+          <button type="submit" class="btn primary">Send question</button><button type="button" class="btn" id="qCancel">Cancel</button>
+          <div class="err" role="alert" style="grid-column:1/-1">${esc(state.queryErr||'')}</div></form>`;
+      }
+    }
+  }
+  const mine = PAYOUTS.filter(p=>p.agent===a.id);
+  if(mine.length) h += `<h3 style="margin:20px 0 8px;font-size:14px">Payout agreements${info('payouts')}</h3><div class="payouts">${mine.map(p=>payoutCard(p,false)).join('')}</div>`;
+  return h + `</section>`;
+}
+
+function deductionsTab(){
+  const si = stageIdx();
+  let h = `<section class="panel" aria-labelledby="pr1"><div class="panel-head"><h2 id="pr1">${PAYRUN.month} payroll</h2><span class="note">Basic salary around ${PAYRUN.basicDate} · commission around ${PAYRUN.comDate}</span></div>
+    <ol class="stepper">${STAGES.map((s,i)=>`<li class="${i<si?'done':i===si?'now':''}"><span class="dot">${i<si?'✓':i+1}</span>${s.label}</li>`).join('')}</ol>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px">
+      ${STAGES[si].next ? `<button type="button" class="btn primary" id="stageNext">${STAGES[si].next}</button>` : '<span class="pill ok">This month is closed and locked</span>'}
+      ${si>0 ? '<button type="button" class="btn" id="stageReset">Reset demo</button>' : ''}
+      <span class="small">${si===0?'Add deductions and payout instalments. Agents see nothing yet.':si===1?`Agents can confirm or question deductions until ${PAYRUN.reviewEnds}. Basic salary goes out ${PAYRUN.basicWindow}.`:si===2?`Basic salary deductions are locked. Commission goes out ${PAYRUN.comWindow}, after insurance and reviews are counted.`:'Everything for this month is paid and saved to history.'}</span>
+    </div></section>`;
+  const R = AGENTS.map(a => ({a, d:monthDeductions(a)}));
+  const withDed = R.filter(r=>r.d.lines.length), conf = withDed.filter(r=>ACK[r.a.id]==='ok').length, open = QUERIES.filter(q=>q.open).length;
+  const sum = f => R.reduce((s,r)=>s+f(r),0);
+  h += `<section class="panel" aria-labelledby="pr2"><div class="panel-head"><h2 id="pr2">Deductions this month</h2><span class="note">${si>=1 ? `${conf} of ${withDed.length} confirmed · ${open} open question${open===1?'':'s'}` : 'Not sent to agents yet'}</span></div>
+    <div class="tscroll"><table><thead><tr><th>Agent</th><th class="n">Basic salary (net)</th><th class="n">From basic</th><th class="n">Basic to transfer</th><th class="n">From commission</th><th>Agent review</th></tr></thead><tbody>`;
+  R.forEach(({a,d}) => { const k = ACK[a.id];
+    const s = !d.lines.length ? '<span class="small">Nothing to review</span>' : si===0 ? '<span class="small">Not sent</span>' : k==='ok' ? '<span class="flag ok">Confirmed</span>' : k==='query' ? '<span class="flag wa">Question</span>' : '<span class="flag" style="background:var(--surface-2);color:var(--muted)">Not reviewed</span>';
+    h += `<tr class="click${state.slipAgent===a.id?' sel':''}" tabindex="0" data-slip="${a.id}"><td><b>${esc(a.name)}</b></td><td class="n">${egp(a.salary)}</td><td class="n">${d.basicTotal?'− '+egp(d.basicTotal):'–'}</td><td class="n"><b>${egp(d.salaryAfter)}</b></td><td class="n">${d.comTotal?'− '+egp(d.comTotal):'–'}</td><td>${s}</td></tr>`; });
+  h += `<tr class="sum"><td>Total</td><td class="n">${egp(AGENTS.reduce((s,a)=>s+a.salary,0))}</td><td class="n">− ${egp(sum(r=>r.d.basicTotal))}</td><td class="n">${egp(sum(r=>r.d.salaryAfter))}</td><td class="n">− ${egp(sum(r=>r.d.comTotal))}</td><td></td></tr></tbody></table></div>
+    <p class="small" style="margin:10px 0 0">Commission deductions come off the commission paid around ${PAYRUN.comDate}. Tap a row to see what that agent sees.</p></section>`;
+
+  const sa = AGENTS.find(a=>a.id===state.slipAgent) || AGENTS[0];
+  const sd = monthDeductions(sa);
+  h += `<div class="cols"><div class="col-main"><section class="panel" aria-labelledby="pr3"><div class="panel-head"><h2 id="pr3">${esc(sa.name)}</h2><span class="note">As the agent sees it</span></div>`;
+  h += sd.lines.length ? dedTable(sd.basic,'From basic salary',`${PAYRUN.basicDate} (${PAYRUN.basicWindow})`, si>=2) + dedTable(sd.com,'From commission',`${PAYRUN.comDate} (${PAYRUN.comWindow})`, si>=3) : '<p class="small">No deductions this month.</p>';
+  h += `</section><section class="panel" aria-labelledby="pr6"><div class="panel-head"><h2 id="pr6">Payout agreements</h2><span class="note">${egp(PAYOUTS.reduce((s,p)=>s+Math.max(0,p.total-p.paidBefore),0))} still owed in total</span></div><div class="payouts">${PAYOUTS.map(p=>payoutCard(p,true)).join('')}</div>`;
+  if(si<2) h += `<form id="payForm" class="rulef" style="margin-top:16px" novalidate>
+      <label for="po-agent">Agent<select id="po-agent">${AGENTS.map(a=>`<option value="${a.id}"${a.id===sa.id?' selected':''}>${esc(a.name)}</option>`).join('')}</select></label>
+      <label for="po-total">Total agreed (LE)<input id="po-total" type="number" min="1" step="1"></label>
+      <label for="po-basic">Monthly from basic (LE)<input id="po-basic" type="number" min="0" step="1" value="0"></label>
+      <label for="po-com">Monthly from commission (LE)<input id="po-com" type="number" min="0" step="1" value="0"></label>
+      <label for="po-reason" style="grid-column:1/-1">What happened, as in the signed agreement<input id="po-reason" type="text" maxlength="140" placeholder="e.g. Wrong advice on a visa rule, the company paid the customer's rebooking"></label>
+      <button type="submit" class="btn primary">Add payout agreement</button>
+      <div class="err" role="alert" style="grid-column:1/-1">${esc(state.payErr||'')}</div></form>`;
+  h += `<p class="small" style="margin:10px 0 0">Instalments are added automatically each month, split between basic salary and commission as agreed, until the total is repaid. Keep the signed agreement on file.</p></section>`;
+  h += `<section class="panel" aria-labelledby="pr4"><div class="panel-head"><h2 id="pr4">Questions from agents</h2><span class="note">${open} open</span></div>`;
+  if(!QUERIES.length) h += `<p class="small">No questions yet.</p>`;
+  QUERIES.forEach(q => { const ag = AGENTS.find(a=>a.id===q.agent);
+    h += `<div class="rule" style="margin-bottom:8px"><div class="r-main"><b>${esc(ag.name)} · ${esc(q.line)}</b><span>${esc(q.msg)}</span></div>${q.open?`<button type="button" class="btn small" data-resolve="${q.id}">Mark resolved</button>`:'<span class="flag ok">Resolved</span>'}</div>`; });
+  h += `</section></div><div class="col-side"><section class="panel" aria-labelledby="pr5"><h2 id="pr5" style="margin-bottom:12px">Other deductions</h2>`;
+  if(si>=2) h += `<p class="small">Basic salary has been paid, so this month's deductions are locked.</p>`;
+  else h += `<form id="dedForm" class="set" novalidate>
+      <label for="d-agent">Agent<select id="d-agent">${AGENTS.map(a=>`<option value="${a.id}"${a.id===sa.id?' selected':''}>${esc(a.name)}</option>`).join('')}</select></label>
+      <label for="d-type">Type<select id="d-type">${DED_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></label>
+      <label for="d-from">Take it from<select id="d-from"><option value="basic">Basic salary (around ${PAYRUN.basicDate})</option><option value="commission">Commission (around ${PAYRUN.comDate})</option></select></label>
+      <label for="d-amt">Amount (LE)<input id="d-amt" type="number" min="1" step="1"></label>
+      <label for="d-note">Reason the agent will see<input id="d-note" type="text" maxlength="90" placeholder="e.g. 1 absent day × salary ÷ 22"></label>
+      <button type="submit" class="btn primary">Add deduction</button>
+      <div class="err" role="alert">${esc(state.dedErr||'')}</div></form>`;
+  h += `<div class="rules" style="margin-top:14px">`;
+  DEDUCTIONS.forEach(d => { const ag = AGENTS.find(a=>a.id===d.agent);
+    h += `<div class="rule"><div class="r-main"><b>${esc(ag.name)} · ${esc(d.type)}</b><span>${esc(d.note)} · from ${SRC[d.from].toLowerCase()}</span></div><span class="r-rate">${egp(d.amount)}</span>${si<2?`<button type="button" class="btn small" data-delded="${d.id}" aria-label="Remove deduction">Remove</button>`:''}</div>`; });
+  h += `</div><p class="small" style="margin:10px 0 0">Unpaid absences are suggested from attendance. Basic salary is entered after tax and social insurance, so those never appear here.</p></section></div></div>`;
+  return h;
+}
+
+/* ---------- RAW DATA behind each top-strip number (sample; live tool reads Aircall and HubSpot) ---------- */
+const ITINS = ['Western Caribbean 7N','Greek Isles 10N','Alaska Inside Passage 7N','Bahamas 4N','Mediterranean 7N','Norwegian Fjords 12N','Eastern Caribbean 5N','Bermuda 5N'];
+const tstr = (hh,mm) => String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+const sortDesc = (x,y) => (y.day-x.day) || (y.time<x.time?-1:y.time>x.time?1:0);
+function inboundCalls(a){
+  const ix = AGENTS.indexOf(a), rows = [];
+  for(let k=0; k<a.inEx; k++){ const day = 1 + Math.floor(k*16/Math.max(a.inEx,1));
+    rows.push({day, time:tstr(9 + (k*7+ix)%9, (k*23+ix*5)%60), name:CALLERS[(k*7+ix)%CALLERS.length], num:'+1 (' + [954,305,407,212,813,786][(k+ix+2)%6] + ') 555-01' + String((k*11+ix)%90+10), line: k%4 ? 'Sales line' : 'Bonus queue', dur: (2 + (k*5)%17)+' min', result:'Answered'}); }
+  monthMissed(a).forEach(m => { const d = disputeFor(m.id); if(d && d.status==='accepted') return; rows.push({day:m.day, time:m.time, name:m.name, num:m.num, line:m.line, dur:'Rang '+m.ring, result:'Missed'}); });
+  return rows.sort(sortDesc);
+}
+function outboundCalls(a){
+  const ix = AGENTS.indexOf(a), rows = [], outcomes = ['Connected','No answer','Connected','Voicemail','Connected','No answer'];
+  for(let k=0; k<a.out; k++){ const day = 1 + Math.floor(k*16/Math.max(a.out,1)), oc = outcomes[(k+ix)%outcomes.length];
+    rows.push({day, time:tstr(9 + (k*3+ix)%9, (k*19+ix)%60), name:CALLERS[(k*3+ix+1)%CALLERS.length], num:'+1 (' + [305,954,212,407,786,813][(k+ix)%6] + ') 555-01' + String((k*13+ix*7)%90+10), dur: oc==='Connected' ? (1 + (k*3)%12)+' min' : '0 min', result:oc}); }
+  return rows.sort(sortDesc);
+}
+function dealsList(a){
+  const ix = AGENTS.indexOf(a), rows = [];
+  for(let k=0; k<a.deals; k++){ const day = 1 + Math.floor(k*16/Math.max(a.deals,1));
+    rows.push({day, time:tstr(10 + (k*5+ix)%8, (k*29+ix)%60), name:CALLERS.filter(Boolean)[(k+ix)%7], deal:'Deal '+(48000 + ix*400 + k*7), cruise:ITINS[(k+ix)%ITINS.length], pax: 1 + (k+ix)%4}); }
+  return rows.sort(sortDesc);
+}
+function dataModal(a, kind){
+  const now = calc(a,false);
+  const head = {inbound:'Your inbound calls', outbound:'Your outbound calls', effective:'How your effective inbound adds up', conversion:'How your conversion is calculated'}[kind];
+  let h = `<div class="modal" id="dataModal"><div class="dialog wide" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <div class="earn-head"><h2 id="dTitle">${head}</h2><button type="button" class="btn" id="dataClose">Close</button></div>`;
+  const tableWrap = inner => `<div class="tscroll" style="max-height:min(56vh,500px);overflow-y:auto">${inner}</div>`;
+  const nm = r => `<b>${r.name ? esc(r.name) : 'Unknown caller'}</b><div class="small" style="font-family:ui-monospace,Menlo,monospace">${esc(r.num)}</div>`;
+  if(kind==='inbound'){
+    const rows = inboundCalls(a), miss = rows.filter(r=>r.result==='Missed').length;
+    h += `<div class="sumrow"><span><b>${rows.length}</b> inbound</span><span><b>${rows.length-miss}</b> answered</span><span><b>${miss}</b> missed</span></div>`;
+    h += tableWrap(`<table style="min-width:620px"><thead><tr><th>When</th><th>Caller</th><th>Line</th><th>Length</th><th>Result</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.day} Oct, ${r.time}</td><td>${nm(r)}</td><td>${r.line}</td><td>${r.dur}</td><td>${r.result==='Missed'?'<span class="flag wa">Missed</span>':'Answered'}</td></tr>`).join('')}</tbody></table>`);
+  } else if(kind==='outbound'){
+    const rows = outboundCalls(a), con = rows.filter(r=>r.result==='Connected').length;
+    h += `<div class="sumrow"><span><b>${rows.length}</b> outbound</span><span><b>${con}</b> connected</span><span><b>${Math.floor(rows.length/10)}</b> inbound credits</span></div>`;
+    h += tableWrap(`<table style="min-width:620px"><thead><tr><th>When</th><th>Called</th><th>Length</th><th>Result</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.day} Oct, ${r.time}</td><td>${nm(r)}</td><td>${r.dur}</td><td>${r.result}</td></tr>`).join('')}</tbody></table>`);
+  } else if(kind==='effective'){
+    const inb = inboundCalls(a).filter(r=>r.result==='Answered'), out = outboundCalls(a), days = {};
+    inb.forEach(r => (days[r.day] ||= {a:0,o:0}).a++); out.forEach(r => (days[r.day] ||= {a:0,o:0}).o++);
+    let cumO = 0;
+    const list = Object.keys(days).map(Number).sort((x,y)=>x-y).map(d => { cumO += days[d].o; return {d, a:days[d].a, o:days[d].o, credits:Math.floor(cumO/10)}; });
+    h += `<div class="formula"><span><b>${inb.length}</b> answered inbound</span><span>+</span><span><b>${Math.floor(out.length/10)}</b> credits from ${out.length} outbound</span><span>=</span><span class="res"><b>${inb.length + Math.floor(out.length/10)}</b> effective inbound</span></div>
+      <p class="small" style="margin:0">Every 10 outbound calls give 1 credit. Missed calls don't count here.</p>`;
+    h += tableWrap(`<table style="min-width:520px"><thead><tr><th>Day</th><th class="n">Answered inbound</th><th class="n">Outbound</th><th class="n">Credits so far</th></tr></thead><tbody>${list.map(r=>`<tr><td>${r.d} Oct</td><td class="n">${r.a}</td><td class="n">${r.o}</td><td class="n">${r.credits}</td></tr>`).join('')}</tbody></table>`);
+  } else {
+    const rows = dealsList(a), inAll = now.inAll;
+    h += `<div class="formula"><span><b>${rows.length}</b> deals</span><span>÷</span><span><b>${inAll}</b> inbound calls, including missed</span><span>=</span><span class="res"><b>${pct(inAll ? rows.length/inAll : 0)}</b> conversion</span></div>
+      <p class="small" style="margin:0">Missed calls stay in the total because each one was a chance to book.</p>`;
+    h += tableWrap(`<table style="min-width:620px"><thead><tr><th>Closed</th><th>Customer</th><th>Deal</th><th>Cruise</th><th class="n">Pax</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.day} Oct, ${r.time}</td><td><b>${esc(r.name)}</b></td><td>${r.deal}</td><td>${r.cruise}</td><td class="n">${r.pax}</td></tr>`).join('')}</tbody></table>`);
+  }
+  h += `<p class="small" style="margin:0">Something here looks wrong? <button type="button" class="linkbtn" data-ticket-topic="${kind==='conversion'?'Deals or conversion':'Calls'}">Raise a ticket</button></p>`;
+  return h + `</div></div>`;
+}
+
+/* ---------- TICKETS: raise an issue about anything you don't agree with ---------- */
+const TICKET_TOPICS = ['Calls','Missed calls','Deals or conversion','Commission or tier','Reviews','Deductions or payouts','Attendance','QA score','Other'];
+const TICKETS = [
+  {id:1, agent:'laila', topic:'Reviews', ref:'BBB review, 8 Oct', msg:'My BBB review from 8 Oct is not showing on my dashboard.', status:'answered', reply:'Found it. It was filed under another agent\'s name. Fixed, it now shows on yours.'},
+  {id:2, agent:'tarek', topic:'Deals or conversion', ref:'Deal 48612', msg:'This booking was mine but it shows under the house account.', status:'open', reply:''}
+];
+let nextTicketId = 3;
+function ticketModal(a){
+  const mine = TICKETS.filter(t=>t.agent===a.id);
+  let h = `<div class="modal" id="ticketModal"><div class="dialog wide" role="dialog" aria-modal="true" aria-labelledby="tkTitle">
+    <div class="earn-head"><h2 id="tkTitle">Raise a ticket</h2><button type="button" class="btn" id="ticketClose">Close</button></div>
+    <p class="small" style="margin:0">See something you don't agree with? Tell us what and why. Operations will look into it and reply here.</p>`;
+  if(state.ticketSent) h += `<div class="hint" style="margin-top:0">Ticket sent. You'll see the reply below.</div>`;
+  h += `<form id="ticketForm" class="rulef" novalidate>
+      <label for="tk-topic">What is it about?<select id="tk-topic">${TICKET_TOPICS.map(t=>`<option${t===state.ticketTopic?' selected':''}>${t}</option>`).join('')}</select></label>
+      <label for="tk-ref">Reference (optional)<input id="tk-ref" type="text" maxlength="60" placeholder="e.g. Deal 48612, 12 Oct call"></label>
+      <label for="tk-msg" style="grid-column:1/-1">What looks wrong?<textarea id="tk-msg" style="min-height:90px;font:inherit;background:var(--surface)" placeholder="Explain what you expected to see and what you see instead"></textarea></label>
+      <button type="submit" class="btn primary">Send ticket</button>
+      <div class="err" role="alert" style="grid-column:1/-1">${esc(state.ticketErr||'')}</div></form>
+    <h3 style="margin:6px 0 0;font-size:14px">Your tickets</h3>`;
+  if(!mine.length) h += `<p class="small" style="margin:0">You haven't raised any tickets.</p>`;
+  mine.slice().reverse().forEach(t => h += `<div class="rule"><div class="r-main"><b>${esc(t.topic)}${t.ref?' · '+esc(t.ref):''}</b><span>${esc(t.msg)}</span>${t.reply?`<span style="color:var(--ink)"><b>Reply:</b> ${esc(t.reply)}</span>`:''}</div>${t.status==='open'?'<span class="flag wa">Open</span>':'<span class="flag ok">Answered</span>'}</div>`);
+  return h + `</div></div>`;
+}
+
+/* ---------- HELP: user guide and FAQs ---------- */
+const GUIDE_AGENT = [
+  ['Your home screen', `<p>The strip at the top shows this month's calls: inbound, missed, outbound, effective inbound and conversion. Below it, <b>Needs your action</b> lists today's missed calls that nobody has called back yet, with the customer's details and number, followed by anything you need to do to hit your targets. <b>Today's follow-ups</b> are created automatically from your calls. If one is wrong, tap "Not needed".</p>`],
+  ['Missed calls', `<p>Tap the <b>Missed calls</b> box to see every missed call counted this month, with the caller, the line it came in on and whether it was called back. Missed calls count toward your conversion rate, so calling back quickly matters.</p>`],
+  ['Your month so far and your tier', `<p><b>My month so far</b> shows your deals, passengers or final payment bookings, conversion, CSAT, NPS or lead score, reviews and insurance policies. <b>My tier</b> shows which tier and performance level you are in, and what you need to reach the next one.</p>`],
+  ['Private details', `<p>Your deductions and payouts are private. Tap <b>View privately</b>, confirm you will keep them to yourself, and enter your password. Tap <b>Hide</b> when you are done.</p>`],
+  ['Deductions and payouts', `<p>Before any money is transferred, you'll see every deduction for the month with its reason, split into what comes off your basic salary and what comes off your commission. Tap <b>This looks right</b>, or <b>Question a deduction</b> if something is wrong. Any payout agreement shows the total, what you've paid so far, this month's amount and what's left.</p>`],
+  ['When you get paid', `<p><b>Basic salary:</b> around the 31st, give or take two days.<br><b>Commission:</b> around the 15th of the next month, give or take two days. This gives time for insurance and reviews to be confirmed first.</p>`],
+  ['The "i" bubbles', `<p>Hover over, or tap, any small <b>i</b> next to a number to see exactly how it is calculated.</p>`]
+];
+const GUIDE_ADMIN = [
+  ['This month', `<p>Everyone's volume, tier, quality, commission and variable pay in one table, for month to date or projected. Settings hold the exchange rate and the two month-end switches: <b>insurance vendor file received</b> and <b>reviews counted</b>. Review owner changes and missed call disputes here, then copy the payroll export.</p>`],
+  ['Review rules', `<p>Set the base rate and add rules by platform (Trustpilot, Google Florida, Google New York, BBB) and date window. If more than one rule applies, the highest rate wins. Each review is priced on the day it was posted.</p>`],
+  ['Deductions and payouts', `<p>Run payroll in four steps: <b>Preparing</b>, <b>Agents reviewing</b>, <b>Basic salary paid</b>, <b>Commission paid</b>. Add deductions and payout agreements while preparing; agents can confirm or question them during review. Deductions lock once basic salary is paid.</p>`],
+  ['Cost history', `<p>Every agent's monthly cost, with or without base salary, plus cost per passenger or per booking. Tap an agent for a month-by-month breakdown.</p>`],
+  ['Month-end checklist', `<ol class="plain" style="padding-left:18px"><li>1st: set the Google exchange rate for the month just closed.</li><li>By the 3rd: settle missed call disputes.</li><li>First week: tick "insurance vendor file received" and "reviews counted".</li><li>Before the review deadline: answer every agent question.</li><li>Around the 31st: pay basic salary and mark it paid.</li><li>Around the 15th: pay commission and mark it paid.</li></ol>`]
+];
+const FAQS = [
+  ['What is effective inbound?', 'Your answered inbound calls plus 1 credit for every 10 outbound calls. On the Legacy plan you need 65 to reach the top three performance levels.'],
+  ['Why is my insurance bonus blank?', 'Insurance is only added once the insurance vendor sends the file confirming payment, usually after month end. It is paid with your commission once confirmed.'],
+  ['When do reviews count, and how much do they pay?', 'Reviews are counted in the first week of the next month. Each one pays the base rate or a higher rate if a bonus rule applied on the day it was posted, for example BBB reviews or a double rate window. You always get the highest rate that applies.'],
+  ['I am on the Q3 2026 plan. Why did I drop a tier?', 'If you miss any one of the three standards (CSAT, conversion or lead score), every booking that month pays one tier lower. Missing more than one still drops only one tier.'],
+  ['What is a payout?', 'If the company had to pay money because of a mistake, for example wrong advice a customer acted on, you may agree to repay it in monthly amounts from your basic salary, your commission, or both. The tool shows the total, what you have paid and what is left.'],
+  ['I disagree with a deduction.', 'Tap Question a deduction before the review deadline and explain what looks wrong. Nothing is transferred until questions are answered.'],
+  ['Can other people see my earnings?', 'No. Only you and payroll admins can see your figures. Please do not share or discuss them; it is part of your plan terms.'],
+  ['Who do I contact if something looks wrong?', 'Your team lead first, then Operations. Use the question and dispute buttons where you can, so there is a record.']
+];
+function helpModal(){
+  const tab = state.helpTab || 'guide';
+  const sections = state.view==='admin' ? GUIDE_ADMIN : GUIDE_AGENT;
+  let h = `<div class="modal" id="helpModal"><div class="dialog wide" role="dialog" aria-modal="true" aria-labelledby="hTitle">
+    <div class="earn-head"><h2 id="hTitle">Help</h2><button type="button" class="btn" id="helpClose">Close</button></div>
+    <div class="seg" role="group" aria-label="Help sections" style="align-self:flex-start">
+      <button type="button" data-helptab="guide" aria-pressed="${tab==='guide'}">${state.view==='admin'?'Admin guide':'User guide'}</button>
+      <button type="button" data-helptab="faq" aria-pressed="${tab==='faq'}">FAQs</button>
+    </div><div class="helpbody">`;
+  if(tab==='guide') h += sections.map(([t,b]) => `<section class="helpsec"><h3>${t}</h3>${b}</section>`).join('');
+  else h += FAQS.map(([q,a],i) => `<details class="faq"${i===0?' open':''}><summary>${q}</summary><p>${a}</p></details>`).join('');
+  if(state.view==='agent') h += `<p class="small" style="margin:0">Still not sure, or think something is wrong? <button type="button" class="linkbtn" data-ticket-topic="Other">Raise a ticket</button></p>`;
+  return h + `</div></div></div>`;
+}
+
+/* ---------- ADMIN VIEW ---------- */
+function rows(){ const proj = state.adminMode==='proj'; return AGENTS.map(a => ({a, c:calc(a,proj)})); }
+function csv(){
+  const head = ['Agent','Plan','Volume','Tier','Quality','Commission USD','FX rate','Commission EGP','Bonuses EGP','Variable pay EGP','Base salary EGP','Total cost EGP','Attendance','QA','Flags'];
+  const out = [head.join(',')];
+  rows().forEach(({a,c})=>{
+    const bon = a.plan==='new' ? c.reviewEgp : c.bonusEgp;
+    out.push([a.name, a.plan==='new'?'Q3 2026 plan':'Legacy commission plan', c.volume, c.tierLabel, c.quality, c.comUsd.toFixed(2), S.fx.toFixed(2), Math.round(c.comUsd*S.fx), Math.round(bon), Math.round(c.totalEgp), a.salary, Math.round(c.totalEgp + a.salary), pct(attPct(a)), a.qa, c.flags.map(f=>f[1]).join(' | ')]
+      .map(v => /[",]/.test(String(v)) ? '"'+String(v).replace(/"/g,'""')+'"' : v).join(','));
+  });
+  return out.join('\n');
+}
+function payrollTab(){
+  const R = rows();
+  let h = `<section class="panel" aria-labelledby="a1"><div class="panel-head"><h2 id="a1">Everyone this month</h2>
+    <div class="seg" role="group" aria-label="Period"><button type="button" data-mode="mtd" aria-pressed="${state.adminMode==='mtd'}">Month to date</button><button type="button" data-mode="proj" aria-pressed="${state.adminMode==='proj'}">Projected</button></div></div>
+  <div class="tscroll"><table><thead><tr><th>Agent</th><th>Plan</th><th class="n">Volume</th><th>Tier</th><th>Quality</th><th class="n">Commission</th><th class="n">Bonuses</th><th class="n">Variable pay${info('variable')}</th><th class="n">Attend.</th><th>Flags</th></tr></thead><tbody>`;
+  R.forEach(({a,c})=>{
+    const bon = a.plan==='new' ? c.reviewEgp : c.bonusEgp;
+    h += `<tr class="click" tabindex="0" data-open="${a.id}"><td><b>${esc(a.name)}</b></td>
+      <td><span class="badge${a.plan==='new'?' new':''}">${a.plan==='new'?'Q3 2026':'Legacy'}</span></td>
+      <td class="n">${c.volume}</td><td>${c.tierLabel}</td><td>${esc(c.quality)}</td>
+      <td class="n">${usd(c.comUsd)}</td><td class="n">${egp(bon)}</td><td class="n"><b>${egp(c.totalEgp)}</b></td><td class="n">${pct(attPct(a))}</td>
+      <td>${c.flags.map(f=>`<span class="flag ${f[0]}">${esc(f[1])}</span>`).join('') || '<span class="small">None</span>'}</td></tr>`;
+  });
+  h += `</tbody></table></div><p class="small" style="margin:10px 0 0">Tap a row to open that agent's dashboard.</p></section>
+  <div class="cols"><div class="col-main">
+  <section class="panel" aria-labelledby="a2"><div class="panel-head"><h2 id="a2">Owner changes</h2><span class="note">Changes close to final payment are flagged</span></div>
+  <div class="tscroll"><table style="min-width:640px"><thead><tr><th>Booking</th><th>From</th><th>To</th><th>Changed</th><th>Final payment</th><th></th></tr></thead><tbody>`;
+  OWNER_LOG.forEach(o=>{ h += `<tr><td>${esc(o.deal)}</td><td>${esc(o.from)}</td><td>${esc(o.to)}</td><td>${esc(o.changed)}</td><td>${esc(o.fp)}</td><td>${o.why?`<span class="flag wa">${esc(o.why)}</span>`:''}</td></tr>`; });
+  h += `</tbody></table></div></section>
+  <section class="panel" aria-labelledby="a6"><div class="panel-head"><h2 id="a6">Tickets from agents</h2><span class="note">${TICKETS.filter(t=>t.status==='open').length} open</span></div>
+  ${TICKETS.length ? TICKETS.slice().reverse().map(t => { const ag = AGENTS.find(x=>x.id===t.agent);
+    return `<div class="rule" style="margin-bottom:8px"><div class="r-main"><b>${esc(ag.name)} · ${esc(t.topic)}${t.ref?' · '+esc(t.ref):''}</b><span>${esc(t.msg)}</span>${t.reply?`<span style="color:var(--ink)"><b>Your reply:</b> ${esc(t.reply)}</span>`:''}</div>
+      ${t.status==='open' ? `<label class="field" for="tr-${t.id}" style="flex:1 1 220px"><span class="small" style="position:absolute;left:-9999px">Reply</span><input id="tr-${t.id}" type="text" placeholder="Reply to ${esc(ag.name.split(' ')[0])}" style="flex:1;min-width:0"></label><button type="button" class="btn small" data-answer="${t.id}">Send reply</button>` : '<span class="flag ok">Answered</span>'}</div>`; }).join('') : '<p class="small">No tickets.</p>'}
+  </section>
+  <section class="panel" aria-labelledby="a5"><div class="panel-head"><h2 id="a5">Missed call disputes</h2><span class="note">${DISPUTES.filter(d=>d.status==='pending').length} waiting for you</span></div>
+  ${DISPUTES.length ? DISPUTES.map(d => { const ag = AGENTS.find(x=>x.id===d.agent); const m = monthMissed(ag).find(x=>x.id===d.call) || {};
+    return `<div class="rule" style="margin-bottom:8px"><div class="r-main"><b>${esc(ag.name)} · ${m.day||''} Oct ${m.time||''} · ${esc(m.line||'')}</b><span>${esc(d.reason)}: ${esc(d.note)}</span><span>Aircall status at the time: ${esc(m.status||'Unknown')}</span></div>
+      ${d.status==='pending' ? `<button type="button" class="btn small" data-dsp="accepted" data-did="${d.id}">Accept and remove</button><button type="button" class="btn small" data-dsp="rejected" data-did="${d.id}">Reject</button>` : `<span class="flag ${d.status==='accepted'?'ok':'no'}">${d.status==='accepted'?'Accepted':'Rejected'}</span>`}</div>`; }).join('') : '<p class="small">No disputes this month.</p>'}
+  <p class="small" style="margin:10px 0 0">Accepting removes the call from the agent's inbound and missed counts, so their conversion rate updates straight away.</p></section>
+  <section class="panel" aria-labelledby="a3"><div class="panel-head"><h2 id="a3">Payroll export</h2><span class="note">One file for both plans, salary included</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px"><button type="button" class="btn primary" id="copyCsv">Copy payroll CSV</button><span class="small" id="copyMsg" role="status"></span></div>
+    <label for="csvBox" class="small">Paste into Excel or Google Sheets. The live tool exports an Excel file.</label>
+    <textarea id="csvBox" readonly>${esc(csv())}</textarea></section>
+  </div><div class="col-side">
+  <section class="panel" aria-labelledby="a4"><h2 id="a4" style="margin-bottom:12px">Settings</h2><div class="set">
+    <label for="s-fx">USD to EGP (Google rate on the 1st)<input id="s-fx" type="number" step="0.01" min="1" value="${S.fx.toFixed(2)}"></label>
+    <label for="s-conv">New plan conversion standard (%)<input id="s-conv" type="number" step="1" min="0" max="100" value="${Math.round(S.nw.conv*100)}"></label>
+    <label for="s-day">Working day of the month<input id="s-day" type="number" step="1" min="1" max="${S.workDays}" value="${S.dayNo}"></label>
+    <label class="chkrow" for="s-ins"><input type="checkbox" id="s-ins"${S.insReceived?' checked':''}> Insurance vendor file received (adds confirmed policies)</label>
+    <label class="chkrow" for="s-revc"><input type="checkbox" id="s-revc"${S.reviewsCounted?' checked':''}> Reviews counted for this month</label>
+    <p class="small" style="margin:0">Changes recalculate every agent instantly. Review rates live in the Review rules tab.</p>
+  </div></section></div></div>`;
+  return h;
+}
+function rulesTab(){
+  let h = `<section class="panel" aria-labelledby="r1"><div class="panel-head"><h2 id="r1">Review bonus rules</h2><span class="note">The highest matching rate applies to each review</span></div>
+    <div class="rules">
+      <div class="rule"><div class="r-main"><b>Base rate</b><span>All platforms · whole month · always on</span></div>
+        <label class="field" for="r-base">Rate <input id="r-base" type="number" step="50" min="0" value="${S.baseReview}" style="width:110px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-height:36px;background:var(--surface)"></label></div>`;
+  S.reviewRules.forEach(r => h += `<div class="rule"><div class="r-main"><b>${esc(r.label)}</b><span>${PLATFORMS[r.platform]} · ${winLabel(r)}</span></div><span class="r-rate">${egp(r.rate)}</span><button type="button" class="btn small" data-delrule="${r.id}" aria-label="Remove ${esc(r.label)}">Remove</button></div>`);
+  h += `</div><form id="ruleForm" class="rulef" novalidate>
+      <label for="rf-label">Name<input id="rf-label" type="text" placeholder="e.g. Office push" maxlength="40"></label>
+      <label for="rf-plat">Platform<select id="rf-plat">${Object.entries(PLATFORMS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+      <label for="rf-from">From (Oct)<input id="rf-from" type="number" min="1" max="31" placeholder="1"></label>
+      <label for="rf-to">To (Oct)<input id="rf-to" type="number" min="1" max="31" placeholder="31"></label>
+      <label for="rf-rate">Rate (LE)<input id="rf-rate" type="number" min="0" step="50" value="500"></label>
+      <button type="submit" class="btn primary">Add rule</button>
+    </form>
+    <p class="small" role="status" style="margin:10px 0 0">${esc(state.ruleMsg || 'Leave the dates empty for the whole month. Examples: 750 for BBB, 500 for the Florida office Google profile only, or 500 on all platforms from the 20th to the 31st.')}</p>
+  </section>
+  <section class="panel" aria-labelledby="r2"><div class="panel-head"><h2 id="r2">How this month's reviews price out</h2><span class="note">Updates as you change the rules</span></div>
+  <div class="tscroll"><table style="min-width:560px"><thead><tr><th>Platform</th><th class="n">Reviews</th><th class="n">At base rate</th><th class="n">At a higher rate</th><th class="n">Cost</th></tr></thead><tbody>`;
+  const by = {};
+  AGENTS.forEach(a => a.reviews.forEach(r => { if(a.plan==='new' && (r[3]<30 || r[1]<1)) return; const p = reviewRate(r[0], r[1]); const k=r[0]; by[k] ||= {n:0,base:0,up:0,cost:0}; by[k].n++; p.rate>S.baseReview ? by[k].up++ : by[k].base++; by[k].cost += p.rate; }));
+  let tot={n:0,base:0,up:0,cost:0};
+  Object.keys(PLATFORMS).filter(k=>k!=='all').forEach(k => { const v = by[k] || {n:0,base:0,up:0,cost:0}; ['n','base','up','cost'].forEach(x=>tot[x]+=v[x]);
+    h += `<tr><td>${PLATFORMS[k]}</td><td class="n">${v.n}</td><td class="n">${v.base}</td><td class="n">${v.up}</td><td class="n">${egp(v.cost)}</td></tr>`; });
+  h += `<tr class="sum"><td>Total</td><td class="n">${tot.n}</td><td class="n">${tot.base}</td><td class="n">${tot.up}</td><td class="n">${egp(tot.cost)}</td></tr></tbody></table></div>
+  <p class="small" style="margin:10px 0 0">New-plan reviews count here only once they are live 30 days.</p></section>`;
+  return h;
+}
+function historyTab(){
+  const metric = state.histMetric;
+  const H = AGENTS.map(a => ({a, h:history(a)}));
+  const colTot = MONTHS.map((_,m)=>H.reduce((s,x)=>s+(cost(x.h[m],metric)||0),0));
+  let h = `<section class="panel" aria-labelledby="h1"><div class="panel-head"><h2 id="h1">Cost per agent by month</h2>
+    <div class="seg" role="group" aria-label="What to include"><button type="button" data-metric="total" aria-pressed="${metric==='total'}">Total cost</button><button type="button" data-metric="var" aria-pressed="${metric==='var'}">Variable pay only</button></div></div>
+    <p class="small" style="margin:-4px 0 12px">${metric==='total'?'Base salary + commission + bonuses and stipends.':'Commission + bonuses and stipends, without base salary.'} October is projected. Tap a row for the breakdown.</p>
+    <div class="tscroll"><table><thead><tr><th>Agent</th><th>Plan</th>${MONTHS.map((m,i)=>`<th class="n">${m}${i===5?' (proj.)':''}</th>`).join('')}<th class="n">Avg / month</th><th class="n">Cost per unit${info('costUnit')}</th></tr></thead><tbody>`;
+  H.forEach(({a,h:hist}) => {
+    const vals = hist.map(x=>cost(x,metric)), have = hist.filter(Boolean);
+    const avg = have.reduce((s,x)=>s+cost(x,metric),0)/have.length;
+    const units = have.reduce((s,x)=>s+x.units,0)/have.length;
+    const unit = a.plan==='new' ? 'booking' : 'pax';
+    h += `<tr class="click${state.histAgent===a.id?' sel':''}" tabindex="0" data-hist="${a.id}"><td><b>${esc(a.name)}</b></td><td><span class="badge${a.plan==='new'?' new':''}">${a.plan==='new'?'Q3 2026':'Legacy'}</span></td>
+      ${vals.map(v=>`<td class="n">${v==null?'<span class="small">Not joined</span>':egp(v)}</td>`).join('')}
+      <td class="n"><b>${egp(avg)}</b></td><td class="n">${units?egp(avg/units)+' / '+unit:'<span class="small">No sales</span>'}</td></tr>`;
+  });
+  h += `<tr class="sum"><td>Team total</td><td></td>${colTot.map(v=>`<td class="n">${egp(v)}</td>`).join('')}<td class="n">${egp(colTot.reduce((s,v)=>s+v,0)/6)}</td><td></td></tr></tbody></table></div></section>`;
+
+  const sel = H.find(x=>x.a.id===state.histAgent) || H[0];
+  const max = Math.max(...sel.h.filter(Boolean).map(x=>x.salary+x.com+x.bonus));
+  h += `<section class="panel" aria-labelledby="h2"><div class="panel-head"><h2 id="h2">${esc(sel.a.name)}: where the money goes</h2><span class="note">${sel.a.plan==='new'?'Q3 2026 plan':'Legacy commission plan'}</span></div>
+    <div class="chart" role="img" aria-label="Monthly cost for ${esc(sel.a.name)}, split into salary, commission and bonuses">`;
+  sel.h.forEach((x,m) => {
+    if(!x){ h += `<div class="col"><span class="small">–</span><span class="lbl">${MONTHS[m]}</span></div>`; return; }
+    const show = metric==='total' ? [['--c-salary',x.salary],['--c-com',x.com],['--c-bonus',x.bonus]] : [['--c-com',x.com],['--c-bonus',x.bonus]];
+    const tot = show.reduce((s,v)=>s+v[1],0);
+    h += `<div class="col"><span class="amt">${egp(tot)}</span><div class="stack">${show.map(([c,v])=>`<div style="height:${Math.max(0,v/max*160)}px;background:var(${c})"></div>`).join('')}</div><span class="lbl">${MONTHS[m]}${m===5?'*':''}</span></div>`;
+  });
+  h += `</div><div class="legend">${metric==='total'?'<span><i style="background:var(--c-salary)"></i>Base salary</span>':''}<span><i style="background:var(--c-com)"></i>Commission</span><span><i style="background:var(--c-bonus)"></i>Bonuses and stipends</span><span>* projected</span></div>
+    <div class="tscroll" style="margin-top:16px"><table style="min-width:620px"><thead><tr><th>Month</th><th class="n">Base salary</th><th class="n">Commission</th><th class="n">Bonuses</th><th class="n">Total cost</th><th class="n">${sel.a.plan==='new'?'Bookings':'Pax'}</th></tr></thead><tbody>`;
+  sel.h.forEach((x,m)=>{ if(!x) return; h += `<tr><td>${MONTHS[m]}${m===5?' (projected)':''}</td><td class="n">${egp(x.salary)}</td><td class="n">${egp(x.com)}</td><td class="n">${egp(x.bonus)}</td><td class="n"><b>${egp(x.salary+x.com+x.bonus)}</b></td><td class="n">${x.units}</td></tr>`; });
+  h += `</tbody></table></div><p class="small" style="margin:10px 0 0">In the live tool, each month is saved when payroll closes, so these figures never change after the fact.</p></section>`;
+  return h;
+}
+function adminView(){
+  const R = rows();
+  const varEgp = R.reduce((s,r)=>s+r.c.totalEgp,0);
+  const salaries = AGENTS.reduce((s,a)=>s+a.salary,0);
+  const flagged = R.filter(r=>r.c.flags.some(f=>f[0]!=='ok')).length + OWNER_LOG.filter(o=>o.why).length;
+  const tab = state.adminTab;
+  let h = `<section class="band"><div class="wrap">
+    <div><span class="plan">Admin</span><h1>Team payroll</h1><div class="meta">${S.month} · ${state.adminMode==='proj'?'projected to month end':'month to date'} · both plans in one run</div></div>
+    <div class="stats">
+      <div class="stat hl"><div class="k">Total team cost</div><div class="v">${egp(varEgp+salaries)}</div><div class="s">Salary plus variable pay</div></div>
+      <div class="stat"><div class="k">Variable pay</div><div class="v">${egp(varEgp)}</div><div class="s">Commission, bonuses, stipends</div></div>
+      <div class="stat"><div class="k">Agents</div><div class="v">${R.length}</div><div class="s">${R.filter(r=>r.a.plan==='old').length} legacy · ${R.filter(r=>r.a.plan==='new').length} Q3 2026</div></div>
+      <div class="stat"><div class="k">Needs a look</div><div class="v">${flagged}</div><div class="s">Flags and owner changes</div></div>
+    </div></div></section><main class="wrap">
+    <div class="seg" role="group" aria-label="Admin sections" style="align-self:flex-start;background:var(--surface);border:1px solid var(--line)">
+      <button type="button" data-tab="payroll" aria-pressed="${tab==='payroll'}">This month</button>
+      <button type="button" data-tab="rules" aria-pressed="${tab==='rules'}">Review rules</button>
+      <button type="button" data-tab="payslips" aria-pressed="${tab==='payslips'}">Deductions and payouts</button>
+      <button type="button" data-tab="history" aria-pressed="${tab==='history'}">Cost history</button>
+    </div>`;
+  h += tab==='rules' ? rulesTab() : tab==='history' ? historyTab() : tab==='payslips' ? deductionsTab() : payrollTab();
+  return h + `</main>`;
+}
+
+/* ---------- render + events ---------- */
+const app = document.getElementById('app');
+const sel = document.getElementById('agentSel');
+sel.innerHTML = '<optgroup label="Legacy commission plan">' + AGENTS.filter(a=>a.plan==='old').map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('') + '</optgroup>'
+  + '<optgroup label="Q3 2026 plan">' + AGENTS.filter(a=>a.plan==='new').map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('') + '</optgroup>';
+function render(){
+  if(typeof hideTip==='function') hideTip();
+  document.getElementById('v-agent').setAttribute('aria-pressed', state.view==='agent');
+  document.getElementById('v-admin').setAttribute('aria-pressed', state.view==='admin');
+  document.getElementById('agentPick').hidden = state.view!=='agent';
+  document.getElementById('ticketBtn').hidden = state.view!=='agent';
+  sel.value = state.agentId;
+  app.innerHTML = (state.view==='agent' ? agentView(AGENTS.find(a=>a.id===state.agentId)) : adminView()) + (state.helpOpen ? helpModal() : '') + (state.view==='agent' && state.dataOpen ? dataModal(AGENTS.find(a=>a.id===state.agentId), state.dataOpen) : '') + (state.view==='agent' && state.ticketOpen ? ticketModal(AGENTS.find(a=>a.id===state.agentId)) : '');
+}
+document.getElementById('v-agent').addEventListener('click', ()=>{ state.view='agent'; try{localStorage.setItem('chview','agent')}catch(e){} render(); });
+document.getElementById('v-admin').addEventListener('click', ()=>{ state.view='admin'; try{localStorage.setItem('chview','admin')}catch(e){} render(); });
+sel.addEventListener('change', ()=>{ state.agentId = sel.value; state.unlocked=false; state.modal=false; state.queryOpen=false; state.missedOpen=false; render(); });
+const tip = document.createElement('div'); tip.id='tip'; tip.setAttribute('role','tooltip'); tip.hidden=true; document.body.appendChild(tip);
+let tipFor = null;
+function showTip(b){
+  tip.textContent = TIPS[b.dataset.tip] || ''; tip.hidden = false; tipFor = b; b.setAttribute('aria-describedby','tip');
+  const r = b.getBoundingClientRect(), w = tip.offsetWidth, ht = tip.offsetHeight;
+  let left = Math.max(12, Math.min(r.left + r.width/2 - w/2, innerWidth - w - 12));
+  let top = r.bottom + 8; if(top + ht > innerHeight - 12) top = r.top - ht - 8;
+  tip.style.left = left + 'px'; tip.style.top = Math.max(12, top) + 'px';
+}
+function hideTip(){ tip.hidden = true; if(tipFor) tipFor.removeAttribute('aria-describedby'); tipFor = null; }
+document.addEventListener('mouseover', e=>{ const b = e.target.closest && e.target.closest('.info'); if(b) showTip(b); });
+document.addEventListener('mouseout', e=>{ if(e.target.closest && e.target.closest('.info')) hideTip(); });
+document.addEventListener('focusin', e=>{ const b = e.target.closest && e.target.closest('.info'); b ? showTip(b) : hideTip(); });
+window.addEventListener('scroll', hideTip, {passive:true});
+function closeModal(){ state.modal=false; state.modalErr=''; render(); document.getElementById('unlockBtn')?.focus(); }
+document.getElementById('ticketBtn').addEventListener('click', ()=>{ state.ticketOpen=true; state.ticketSent=false; state.ticketErr=''; state.ticketTopic='Calls'; render(); document.getElementById('tk-topic')?.focus(); });
+function closeData(){ state.dataOpen=null; render(); }
+function closeTicket(){ state.ticketOpen=false; state.ticketSent=false; render(); document.getElementById('ticketBtn').focus(); }
+document.getElementById('helpBtn').addEventListener('click', ()=>{ state.helpOpen=true; render(); document.getElementById('helpClose')?.focus(); });
+function closeHelp(){ state.helpOpen=false; render(); document.getElementById('helpBtn').focus(); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && state.ticketOpen){ closeTicket(); return; } if(e.key==='Escape' && state.dataOpen){ closeData(); return; } if(e.key==='Escape' && state.helpOpen){ closeHelp(); return; } if(e.key==='Escape'){ hideTip(); if(state.modal) closeModal(); if(state.missedOpen){ state.missedOpen=false; state.disputeFor=null; render(); document.getElementById('missedBtn')?.focus(); } } });
+app.addEventListener('click', e=>{
+  const t = e.target;
+  const sb = t.closest('button[type="submit"]'); if(sb && sb.form){ e.preventDefault(); onSubmit({target: sb.form, preventDefault(){}}); return; }
+  const ib = t.closest('.info'); if(ib){ e.stopPropagation(); (tipFor===ib && !tip.hidden) ? hideTip() : showTip(ib); return; }
+  hideTip();
+  if(t.id==='ackOk'){ ACK[state.agentId]='ok'; render(); return; }
+  if(t.id==='ackQ'){ state.queryOpen=true; state.queryErr=''; render(); document.getElementById('q-line')?.focus(); return; }
+  if(t.id==='qCancel'){ state.queryOpen=false; render(); return; }
+  const pb = t.closest('[data-past]'); if(pb){ const k = state.agentId+pb.dataset.past; state.pastOpen = state.pastOpen===k ? null : k; render(); return; }
+  if(t.id==='stageNext'){ S.payStage = STAGES[Math.min(stageIdx()+1, STAGES.length-1)].k; render(); return; }
+  if(t.id==='stageReset'){ S.payStage='draft'; render(); return; }
+  const rs = t.closest('[data-resolve]'); if(rs){ const q = QUERIES.find(x=>x.id===+rs.dataset.resolve); if(q) q.open=false; render(); return; }
+  const dd = t.closest('[data-delded]'); if(dd){ const ix = DEDUCTIONS.findIndex(x=>x.id===+dd.dataset.delded); if(ix>=0) DEDUCTIONS.splice(ix,1); render(); return; }
+  const sl = t.closest('[data-slip]'); if(sl){ state.slipAgent = sl.dataset.slip; render(); document.getElementById('pr3')?.scrollIntoView({block:'start'}); return; }
+  const cn = t.closest('[data-callnow]'); if(cn){ const key = cn.dataset.callnow, ag = state.agentId; state.calling = key; state.otherFor = null; render();
+    setTimeout(()=>{ const d = new Date(); (state.calledBack[ag] ||= {})[key] = {how:'callback', time:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'), dur:(2+Math.floor(Math.random()*6))+' min'}; if(state.calling===key) state.calling=null; render(); }, 1800); return; }
+  const oth = t.closest('[data-other]'); if(oth){ state.otherFor = oth.dataset.other; render(); document.getElementById('ot-reason')?.focus(); return; }
+  if(t.id==='otCancel'){ state.otherFor=null; render(); return; }
+  const d = t.closest('[data-dismiss]'); if(d){ (state.dismissed[state.agentId] ||= {})[d.dataset.dismiss] = true; render(); return; }
+  const m = t.closest('[data-mode]'); if(m){ state.adminMode = m.dataset.mode; render(); return; }
+  const tb = t.closest('[data-tab]'); if(tb){ state.adminTab = tb.dataset.tab; state.ruleMsg=''; render(); return; }
+  const mt = t.closest('[data-metric]'); if(mt){ state.histMetric = mt.dataset.metric; render(); return; }
+  const hr = t.closest('[data-hist]'); if(hr){ state.histAgent = hr.dataset.hist; render(); document.getElementById('h2')?.scrollIntoView({block:'start'}); return; }
+  const dr = t.closest('[data-delrule]'); if(dr){ S.reviewRules = S.reviewRules.filter(r=>r.id!==+dr.dataset.delrule); state.ruleMsg='Rule removed. All agents recalculated.'; render(); return; }
+  const o = t.closest('[data-open]'); if(o){ state.agentId = o.dataset.open; state.view='agent'; state.unlocked=false; render(); window.scrollTo(0,0); return; }
+  const tt = t.closest('[data-ticket-topic]'); if(tt){ state.ticketTopic = tt.dataset.ticketTopic; state.dataOpen=null; state.helpOpen=false; state.ticketOpen=true; state.ticketSent=false; state.ticketErr=''; render(); document.getElementById('tk-msg')?.focus(); return; }
+  if(t.id==='ticketClose' || t.id==='ticketModal'){ closeTicket(); return; }
+  const dd2 = t.closest('[data-data]'); if(dd2){ state.dataOpen = dd2.dataset.data; render(); document.getElementById('dataClose')?.focus(); return; }
+  if(t.id==='dataClose' || t.id==='dataModal'){ closeData(); return; }
+  const ans = t.closest('[data-answer]'); if(ans){ const tk = TICKETS.find(x=>x.id===+ans.dataset.answer); const v = document.getElementById('tr-'+ans.dataset.answer).value.trim(); if(tk){ tk.reply = v || 'Looked into this, see your team lead for details.'; tk.status='answered'; } render(); return; }
+  if(t.id==='helpClose' || t.id==='helpModal'){ closeHelp(); return; }
+  const ht = t.closest('[data-helptab]'); if(ht){ state.helpTab = ht.dataset.helptab; render(); return; }
+  if(t.closest('#missedBtn')){ state.missedOpen=true; state.disputeFor=null; render(); document.getElementById('mmClose')?.focus(); return; }
+  if(t.id==='mmClose' || t.id==='missedModal'){ state.missedOpen=false; state.disputeFor=null; render(); document.getElementById('missedBtn')?.focus(); return; }
+  const dsb = t.closest('[data-dispute]'); if(dsb){ state.disputeFor = dsb.dataset.dispute; state.disputeErr=''; render(); document.getElementById('dp-reason')?.focus(); return; }
+  if(t.id==='dpCancel'){ state.disputeFor=null; render(); return; }
+  const dsp = t.closest('[data-dsp]'); if(dsp){ const d = DISPUTES.find(x=>x.id===+dsp.dataset.did); if(d) d.status = dsp.dataset.dsp; render(); return; }
+  if(t.closest('#unlockBtn')){ state.modal=true; state.modalErr=''; render(); document.getElementById('m-ack')?.focus(); return; }
+  if(t.id==='m-cancel' || t.id==='unlockModal'){ closeModal(); return; }
+  if(t.id==='lockBtn'){ state.unlocked=false; render(); window.scrollTo(0,0); return; }
+  if(t.id==='copyCsv'){
+    const box = document.getElementById('csvBox'), msg = document.getElementById('copyMsg');
+    const done = ok => { msg.textContent = ok ? 'Copied' : 'Select the text below and copy it'; if(!ok){ box.focus(); box.select(); } };
+    try{ navigator.clipboard.writeText(box.value).then(()=>done(true), ()=>done(false)); }catch(err){ done(false); }
+  }
+});
+function onSubmit(e){
+  if(e.target.id==='otherForm'){
+    e.preventDefault(); const d = new Date();
+    (state.calledBack[state.agentId] ||= {})[state.otherFor] = {how:'other', reason:document.getElementById('ot-reason').value, time:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+    state.otherFor=null; render(); return;
+  }
+  if(e.target.id==='ticketForm'){
+    e.preventDefault();
+    const msg = document.getElementById('tk-msg').value.trim();
+    if(!msg){ state.ticketErr='Tell us what looks wrong so we can look into it.'; state.ticketTopic=document.getElementById('tk-topic').value; render(); return; }
+    TICKETS.push({id:nextTicketId++, agent:state.agentId, topic:document.getElementById('tk-topic').value, ref:document.getElementById('tk-ref').value.trim(), msg, status:'open', reply:''});
+    state.ticketSent=true; state.ticketErr=''; render(); return;
+  }
+  if(e.target.id==='disputeForm'){
+    e.preventDefault();
+    const note = document.getElementById('dp-note').value.trim();
+    if(!note){ state.disputeErr='Add a short explanation so your manager can check it.'; render(); return; }
+    DISPUTES.push({id:nextDisputeId++, agent:state.agentId, call:state.disputeFor, reason:document.getElementById('dp-reason').value, note, status:'pending'});
+    state.disputeFor=null; render(); return;
+  }
+  if(e.target.id==='queryForm'){
+    e.preventDefault();
+    const msg = document.getElementById('q-msg').value.trim(), line = document.getElementById('q-line').value;
+    if(!msg){ state.queryErr='Tell us what looks wrong so we can check it.'; render(); return; }
+    QUERIES.push({id:nextQueryId++, agent:state.agentId, line, msg, open:true}); ACK[state.agentId]='query'; state.queryOpen=false; render(); return;
+  }
+  if(e.target.id==='payForm'){
+    e.preventDefault();
+    const tot = parseFloat(document.getElementById('po-total').value), fb = parseFloat(document.getElementById('po-basic').value)||0, fc = parseFloat(document.getElementById('po-com').value)||0, why = document.getElementById('po-reason').value.trim();
+    if(!(tot>0)){ state.payErr='Enter the total agreed in EGP.'; render(); return; }
+    if(fb<0 || fc<0 || fb+fc<=0){ state.payErr='Enter a monthly amount from basic salary, commission, or both.'; render(); return; }
+    if(fb+fc>tot){ state.payErr='The monthly amount cannot be more than the total.'; render(); return; }
+    if(!why){ state.payErr='Add the reason from the signed agreement. The agent sees it.'; render(); return; }
+    const ag = document.getElementById('po-agent').value;
+    PAYOUTS.push({id:nextPayoutId++, agent:ag, reason:why, agreed:'17 Oct 2026', total:Math.round(tot), fromBasic:Math.round(fb), fromCom:Math.round(fc), paidBefore:0}); state.slipAgent=ag; state.payErr=''; render(); return;
+  }
+  if(e.target.id==='dedForm'){
+    e.preventDefault();
+    const amt = parseFloat(document.getElementById('d-amt').value), note = document.getElementById('d-note').value.trim();
+    if(!(amt>0)){ state.dedErr='Enter an amount in EGP.'; render(); return; }
+    if(!note){ state.dedErr='Add a reason. The agent sees it with their deductions.'; render(); return; }
+    const ag = document.getElementById('d-agent').value;
+    DEDUCTIONS.push({id:nextDedId++, agent:ag, type:document.getElementById('d-type').value, amount:Math.round(amt), from:document.getElementById('d-from').value, note}); state.slipAgent=ag; state.dedErr=''; render(); return;
+  }
+  if(e.target.id==='unlockForm'){
+    e.preventDefault();
+    const ack = document.getElementById('m-ack').checked, pw = document.getElementById('m-pw').value;
+    if(!ack){ state.modalErr='Tick the box to confirm you will keep your figures private.'; render(); document.getElementById('m-ack')?.focus(); return; }
+    if(!pw){ state.modalErr='Enter your password.'; render(); document.getElementById('m-ack').checked=true; document.getElementById('m-pw')?.focus(); return; }
+    state.modal=false; state.modalErr=''; state.unlocked=true; render(); document.getElementById('e1')?.scrollIntoView({block:'start'}); return;
+  }
+  if(e.target.id!=='ruleForm') return;
+  e.preventDefault();
+  const v = id => document.getElementById(id).value.trim();
+  const from = v('rf-from') ? parseInt(v('rf-from'),10) : null, to = v('rf-to') ? parseInt(v('rf-to'),10) : null, rate = parseFloat(v('rf-rate'));
+  if(!(rate>=0)){ state.ruleMsg='Enter a rate in EGP, for example 500.'; render(); return; }
+  if((from!=null && (from<1||from>31)) || (to!=null && (to<1||to>31)) || (from!=null && to!=null && from>to)){ state.ruleMsg='Check the dates: use days 1 to 31, with From before To.'; render(); return; }
+  const plat = v('rf-plat');
+  S.reviewRules.push({id:nextRuleId++, label: v('rf-label') || (PLATFORMS[plat]+' bonus'), platform:plat, from, to, rate});
+  state.ruleMsg='Rule added. All agents recalculated.'; render();
+}
+app.addEventListener('submit', onSubmit);
+app.addEventListener('keydown', e=>{ const o = e.target.closest('[data-open],[data-hist],[data-slip]'); if(o && (e.key==='Enter'||e.key===' ') && e.target===o){ e.preventDefault(); o.click(); } });
+app.addEventListener('change', e=>{
+  const t = e.target;
+  if(t.id==='s-fx'){ const v=parseFloat(t.value); if(v>0) S.fx=v; }
+  else if(t.id==='s-conv'){ const v=parseFloat(t.value); if(v>=0&&v<=100) S.nw.conv=v/100; }
+  else if(t.id==='s-day'){ const v=parseInt(t.value,10); if(v>=1&&v<=S.workDays) S.dayNo=v; }
+  else if(t.id==='s-ins'){ S.insReceived = t.checked; }
+  else if(t.id==='s-revc'){ S.reviewsCounted = t.checked; }
+  else if(t.id==='r-base'){ const v=parseFloat(t.value); if(v>=0){ S.baseReview=v; state.ruleMsg='Base rate updated. All agents recalculated.'; } }
+  else return;
+  render();
+});
+window.__calc = {calcNew, calcOld, newPay, reviewRate, history, S, AGENTS};
+render();
+})();
+</script>
